@@ -1,0 +1,1165 @@
+/* This file is part of the Java 1.7 grammar for SableCC.
+ *
+ * Copyright 2006,2012 Etienne M. Gagnon <egagnon@j-meg.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Package org.sablecc.grammars.java_1_7;
+
+
+Tokens
+
+  // 3.8
+
+  identifier = ;
+
+  // 3.9
+
+  abstract_keyword = 'abstract';
+  assert_keyword = 'assert';
+  boolean_keyword = 'boolean';
+  break_keyword = 'break';
+  byte_keyword = 'byte';
+  case_keyword = 'case';
+  catch_keyword = 'catch';
+  char_keyword = 'char';
+  class_keyword = 'class';
+  const_keyword = 'const';
+
+  continue_keyword = 'continue';
+  default_keyword = 'default';
+  do_keyword = 'do';
+  double_keyword = 'double';
+  else_keyword = 'else';
+  enum_keyword = 'enum';
+  extends_keyword = 'extends';
+  final_keyword = 'final';
+  finally_keyword = 'finally';
+  float_keyword = 'float';
+
+  for_keyword = 'for';
+  if_keyword = 'if';
+  goto_keyword = 'goto';
+  implements_keyword = 'implements';
+  import_keyword = 'import';
+  instanceof_keyword = 'instanceof';
+  int_keyword = 'int';
+  interface_keyword = 'interface';
+  long_keyword = 'long';
+  native_keyword = 'native';
+
+  new_keyword = 'new';
+  package_keyword = 'package';
+  private_keyword = 'private';
+  protected_keyword = 'protected';
+  public_keyword = 'public';
+  return_keyword = 'return';
+  short_keyword = 'short';
+  static_keyword = 'static';
+  strictfp_keyword = 'strictfp';
+  super_keyword = 'super';
+
+  switch_keyword = 'switch';
+  synchronized_keyword = 'synchronized';
+  this_keyword = 'this';
+  throw_keyword = 'throw';
+  throws_keyword = 'throws';
+  transient_keyword = 'transient';
+  try_keyword = 'try';
+  void_keyword = 'void';
+  volatile_keyword = 'volatile';
+  while_keyword = 'while';
+
+  // 3.10
+
+  integer_literal = ;
+  floating_point_literal = ;
+  boolean_literal = ;
+  character_literal = ;
+  string_literal = ;
+  null_literal = ;
+
+  // 3.11
+
+  l_par = '(';
+  r_par = ')';
+  l_brc = '{';
+  r_brc = '}';
+  l_bkt = '[';
+  r_bkt = ']';
+  semi = ';';
+  comma = ',';
+  dot   = '.';
+
+  // 3.12
+
+  assign = '=';
+  lt = '<';
+  gt = '>';
+  emark = '!';
+  tilde = '~';
+  qmark = '?';
+  colon = ':';
+
+  eq = '==';
+  lteq = '<=';
+  gteq = '>=';
+  neq = '!=';
+  amp_amp = '&&';
+  bar_bar = '||';
+  plus_plus = '++';
+  minus_minus = '--';
+
+  plus = '+';
+  minus = '-';
+  star = '*';
+  slash = '/';
+  amp = '&';
+  bar = '|';
+  caret = '^';
+  percent = '%';
+  shl = '<<';
+  shr = '>>';
+  ushr = '>>>';
+
+  plus_assign = '+=';
+  minus_assign = '-=';
+  star_assign = '*=';
+  slash_assign = '/=';
+  amp_assign = '&=';
+  bar_assign = '|=';
+  caret_assign = '^=';
+  percent_assign = '%=';
+  shl_assign = '<<=';
+  shr_assign = '>>=';
+  ushr_assign = '>>>=';
+
+  // Missing from Chapter 3 of JLS
+
+  dot_dot_dot = '...';
+  at = '@';
+
+
+Productions
+
+  java_compilation_unit =
+    compilation_unit;
+
+  // 3.10
+
+  literal =
+    {integer} integer_literal |
+    {floating_point} floating_point_literal |
+    {boolean} boolean_literal |
+    {character} character_literal |
+    {string} string_literal |
+    {null} null_literal;
+
+  // 4.1
+
+  type =
+    {primitive} primitive_type |
+    {reference} reference_type;
+
+  // 4.2
+
+  primitive_type =
+    {numeric} numeric_type |
+    {boolean} boolean_keyword;
+
+  numeric_type =
+    {integral} integral_type |
+    {floating} floating_point_type;
+
+  integral_type =
+    {byte} byte_keyword |
+    {short} short_keyword |
+    {int} int_keyword |
+    {long} long_keyword |
+    {char} char_keyword;
+
+  floating_point_type =
+    {float} float_keyword |
+    {double} double_keyword;
+
+  // 4.3
+
+  reference_type =
+    {class} class_or_interface_type |
+    {variable} type_variable |
+    {array} array_type;
+
+  class_or_interface_type =
+    {class} class_type |
+    {interface} interface_type;
+
+  class_type =
+    type_decl_specifier type_arguments?;
+
+  interface_type =
+    type_decl_specifier type_arguments?;
+
+  type_decl_specifier =
+    {name} type_name |
+    {identifier} class_or_interface_type dot identifier;
+
+  // defined differently in 6.5
+  //
+  // type_name =
+  //   {identifier} identifier |
+  //   {type} type_name dot identifier;
+
+  type_variable =
+    identifier;
+
+  array_type =
+    type l_bkt r_bkt;
+
+  // 4.4
+
+  type_parameter =
+    type_variable type_bound?;
+
+  type_bound =
+    {variable} extends_keyword type_variable |
+    {class} extends_keyword class_or_interface_type additional_bound_list?;
+
+  additional_bound_list =
+    {list} additional_bound additional_bound_list |
+    {bound} additional_bound;
+
+  additional_bound =
+    amp interface_type;
+
+  // 4.5
+
+  type_arguments =
+    lt type_argument_list gt;
+
+  type_argument_list =
+    {argument} type_argument |
+    {list} type_argument_list comma type_argument;
+
+  type_argument =
+    {reference} reference_type |
+    {wildcard} wildcard;
+
+  wildcard =
+    qmark wildcard_bounds?;
+
+  wildcard_bounds =
+    {extends} extends_keyword reference_type |
+    {super} super_keyword reference_type;
+
+  // 6.5
+
+  package_name =
+    {identifier} identifier |
+    {package} package_name dot identifier;
+
+  type_name =
+    {identifier} identifier |
+    {type} package_or_type_name dot identifier;
+
+  expression_name =
+    {identifier} identifier |
+    {ambiguous} ambiguous_name dot identifier;
+
+  method_name =
+    {identifier} identifier |
+    {ambiguous} ambiguous_name dot identifier;
+
+  package_or_type_name =
+    {identifier} identifier |
+    {type} package_or_type_name dot identifier;
+
+  ambiguous_name =
+    {identifier} identifier |
+    {ambiguous} ambiguous_name dot identifier;
+
+  // 7.3
+
+  compilation_unit =
+    package_declaration? import_declarations? type_declarations?;
+
+  import_declarations =
+    {declaration} import_declaration |
+    {declarations} import_declarations import_declaration;
+
+  type_declarations =
+    {declaration} type_declaration |
+    {declarations} type_declarations type_declaration;
+
+  // 7.4
+
+  package_declaration =
+    annotations? package_keyword package_name semi;
+
+  // 7.5
+
+  import_declaration =
+    {single} single_type_import_declaration |
+    {type} type_import_on_demand_declaration |
+    {static} single_static_import_declaration |
+    {demand} static_import_on_demand_declaration;
+
+  single_type_import_declaration =
+    import_keyword type_name semi;
+
+  type_import_on_demand_declaration =
+    import_keyword package_or_type_name dot star semi;
+
+  single_static_import_declaration =
+    import_keyword static_keyword type_name dot identifier semi;
+
+  static_import_on_demand_declaration =
+    import_keyword static_keyword type_name dot star semi;
+
+  // 7.6
+
+  type_declaration =
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {semi} semi;
+
+  // 8.1
+
+  class_declaration =
+    {class} normal_class_declaration |
+    {enum} enum_declaration;
+
+  normal_class_declaration =
+    class_modifiers? class_keyword identifier type_parameters? super? interfaces? class_body;
+
+  class_modifiers =
+    {modifier} class_modifier |
+    {modifiers} class_modifiers class_modifier;
+
+  class_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword |
+    {abstract} abstract_keyword |
+    {static} static_keyword |
+    {final} final_keyword |
+    {strictfp} strictfp_keyword;
+
+  type_parameters =
+    lt type_parameter_list gt;
+
+  type_parameter_list =
+    {list} type_parameter_list comma type_parameter |
+    {parameter} type_parameter;
+
+  super =
+    extends_keyword class_type;
+
+  interfaces =
+    implements_keyword interface_type_list;
+
+  interface_type_list =
+    {type} interface_type |
+    {list} interface_type_list comma interface_type;
+
+  class_body =
+    l_brc class_body_declarations? r_brc;
+
+  class_body_declarations =
+    {declaration} class_body_declaration |
+    {declarations} class_body_declarations class_body_declaration;
+
+  class_body_declaration =
+    {member} class_member_declaration |
+    {instance} instance_initializer |
+    {static} static_initializer |
+    {constructor} constructor_declaration;
+
+  class_member_declaration =
+    {field} field_declaration |
+    {method} method_declaration |
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {semi} semi;
+
+  // 8.3
+
+  field_declaration =
+    field_modifiers? type variable_declarators semi;
+
+  variable_declarators =
+    {declarator} variable_declarator |
+    {declarators} variable_declarators comma variable_declarator;
+
+  variable_declarator =
+    {id} variable_declarator_id |
+    {initializer} variable_declarator_id assign variable_initializer;
+
+  variable_declarator_id =
+    {identifier} identifier |
+    {variable} variable_declarator_id l_bkt r_bkt;
+
+  variable_initializer =
+    {expression} expression |
+    {initializer} array_initializer;
+
+  field_modifiers =
+    {modifier} field_modifier |
+    {modifiers} field_modifiers field_modifier;
+
+  field_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword |
+    {static} static_keyword |
+    {final} final_keyword |
+    {transient} transient_keyword |
+    {volatile} volatile_keyword;
+
+  // 8.4
+
+  method_declaration =
+    method_header method_body;
+
+  method_header =
+    method_modifiers? type_parameters? result method_declarator throws?;
+
+  method_declarator =
+    {identifier} identifier l_par formal_parameter_list? r_par |
+    {declarator} method_declarator l_bkt r_bkt;
+
+  formal_parameter_list =
+    {parameter} last_formal_parameter |
+    {parameters} formal_parameters comma last_formal_parameter;
+
+  formal_parameters =
+    {parameter} formal_parameter |
+    {parameters} formal_parameters comma formal_parameter;
+
+  formal_parameter =
+    variable_modifiers? type variable_declarator_id;
+
+  variable_modifiers =
+    {modifier} variable_modifier |
+    {modifiers} variable_modifiers variable_modifier;
+
+  variable_modifier =
+    {annotation} annotation |
+    {final} final_keyword;
+
+  last_formal_parameter =
+    {variable} variable_modifiers? type dot_dot_dot variable_declarator_id |
+    {formal} formal_parameter;
+
+  method_modifiers =
+    {modifier} method_modifier |
+    {modifiers} method_modifiers method_modifier;
+
+  method_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword |
+    {abstract} abstract_keyword |
+    {static} static_keyword |
+    {final} final_keyword |
+    {synchronized} synchronized_keyword |
+    {native} native_keyword |
+    {strictfp} strictfp_keyword;
+
+  result =
+    {type} type |
+    {void} void_keyword;
+
+  throws =
+    throws_keyword exception_type_list;
+
+  exception_type_list =
+    {type} exception_type |
+    {list} exception_type_list comma exception_type;
+
+  exception_type =
+    {name} type_name |
+    {variable} type_variable;
+
+  method_body =
+    {block} block |
+    {semi} semi;
+
+
+  // 8.6
+
+  instance_initializer =
+    block;
+
+  // 8.7
+
+  static_initializer =
+    static_keyword block;
+
+  // 8.8
+
+  constructor_declaration =
+    constructor_modifiers? constructor_declarator throws? constructor_body;
+
+  constructor_declarator =
+    type_parameters? simple_type_name l_par formal_parameter_list? r_par;
+
+  // Missing from JLS
+
+  simple_type_name =
+    identifier;
+
+  constructor_modifiers =
+    {modifier} constructor_modifier |
+    {modifiers} constructor_modifiers constructor_modifier;
+
+  constructor_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword;
+
+  constructor_body =
+    l_brc explicit_constructor_invocation? block_statements? r_brc;
+
+  explicit_constructor_invocation =
+    {this} non_wild_type_arguments? this_keyword l_par argument_list? r_par semi |
+    {super} non_wild_type_arguments? super_keyword l_par argument_list? r_par semi |
+    {primary} primary dot non_wild_type_arguments? super_keyword l_par argument_list? r_par semi;
+
+  non_wild_type_arguments =
+    lt reference_type_list gt;
+
+  reference_type_list =
+    {type} reference_type |
+    {list} reference_type_list comma reference_type;
+
+  // 8.9
+
+  enum_declaration =
+    class_modifiers? enum_keyword identifier interfaces? enum_body;
+
+  enum_body =
+    l_brc enum_constants? comma? enum_body_declarations? r_brc;
+
+  enum_constants =
+    {constant} enum_constant |
+    {constants} enum_constants comma enum_constant;
+
+  enum_constant =
+    annotations? identifier arguments? class_body?;
+
+  arguments =
+    l_par argument_list? r_par;
+
+  enum_body_declarations =
+    semi class_body_declarations?;
+
+  // 9.1
+
+  interface_declaration =
+    {interface} normal_interface_declaration |
+    {annotation} annotation_type_declaration;
+
+  // Includes correction to erroneous split in two alternatives in JLS
+
+  normal_interface_declaration =
+    interface_modifiers? interface_keyword identifier type_parameters? extends_interfaces? interface_body;
+
+  interface_modifiers =
+    {modifier} interface_modifier |
+    {modifiers} interface_modifiers interface_modifier;
+
+  interface_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword |
+    {abstract} abstract_keyword |
+    {static} static_keyword |
+    {strictfp} strictfp_keyword;
+
+  extends_interfaces =
+    extends_keyword interface_type_list;
+
+  interface_body =
+    l_brc interface_member_declarations? r_brc;
+
+  interface_member_declarations =
+    {declaration} interface_member_declaration |
+    {declarations} interface_member_declarations interface_member_declaration;
+
+  interface_member_declaration =
+     {constant} constant_declaration |
+     {method} abstract_method_declaration |
+     {class} class_declaration |
+     {interface} interface_declaration |
+     {semi} semi;
+
+  // 9.3
+
+  constant_declaration =
+    constant_modifiers? type variable_declarators semi;
+
+  constant_modifiers =
+    {modifier} constant_modifier |
+    {modifiers} constant_modifiers constant_modifier;
+
+  constant_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {static} static_keyword |
+    {final} final_keyword;
+
+  // 9.4
+
+  abstract_method_declaration =
+    abstract_method_modifiers? type_parameters? result method_declarator throws? semi;
+
+  abstract_method_modifiers =
+    {modifier} abstract_method_modifier |
+    {modifiers} abstract_method_modifiers abstract_method_modifier;
+
+  abstract_method_modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {abstract} abstract_keyword;
+
+  // 9.6
+
+  annotation_type_declaration =
+    interface_modifiers? at interface_keyword identifier annotation_type_body;
+
+  annotation_type_body =
+    l_brc annotation_type_element_declarations? r_brc;
+
+  annotation_type_element_declarations =
+    {declaration} annotation_type_element_declaration |
+    {declarations} annotation_type_element_declarations annotation_type_element_declaration;
+
+  annotation_type_element_declaration =
+    {abstract} abstract_method_modifiers? type identifier l_par r_par dims? default_value? semi |
+    {constant} constant_declaration |
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {enum} enum_declaration |
+    {annotation} annotation_type_declaration |
+    {semi} semi;
+
+  default_value =
+    default_keyword element_value;
+
+  // 9.7
+
+  annotations =
+    {annotation} annotation |
+    {annotations} annotations annotation;
+
+  annotation =
+    {normal_annotation} normal_annotation |
+    {marker_annotation} marker_annotation |
+    {single} single_element_annotation;
+
+  normal_annotation =
+    at type_name l_par element_value_pairs? r_par;
+
+  element_value_pairs =
+    {pair} element_value_pair |
+    {pairs} element_value_pairs comma element_value_pair;
+
+  element_value_pair =
+    identifier assign element_value;
+
+  element_value =
+    {conditional} conditional_expression |
+    {annotation} annotation |
+    {array} element_value_array_initializer;
+
+  element_value_array_initializer =
+    l_brc element_values? comma? r_brc;
+
+  element_values =
+    {value} element_value |
+    {values} element_values comma element_value;
+
+  marker_annotation =
+    at identifier;
+
+  single_element_annotation =
+    at identifier l_par element_value r_par;
+
+  // 10.6
+
+  array_initializer =
+    l_brc variable_initializers? comma? r_brc;
+
+  variable_initializers =
+    {initializer} variable_initializer |
+    {initializers} variable_initializers comma variable_initializer;
+
+  // 14.2
+
+  block =
+    l_brc block_statements? r_brc;
+
+  block_statements =
+    {statement} block_statement |
+    {statements} block_statements block_statement;
+
+  block_statement =
+    {variable} local_variable_declaration_statement |
+    {class} class_declaration |
+    {statement} statement;
+
+  // 14.4
+
+  local_variable_declaration_statement =
+    local_variable_declaration semi;
+
+  local_variable_declaration =
+    variable_modifiers? type variable_declarators;
+
+  // 14.5
+
+  statement =
+    {without_trailing_substatement} statement_without_trailing_substatement |
+    {labeled_statement} labeled_statement |
+    {if} if_then_statement |
+    {if_else} if_then_else_statement |
+    {while_statement} while_statement |
+    {for_statement} for_statement;
+
+  statement_without_trailing_substatement =
+    {block} block |
+    {empty_statement} empty_statement |
+    {expression_statement} expression_statement |
+    {assert_statement} assert_statement |
+    {switch_statement} switch_statement |
+    {do_statement} do_statement |
+    {break_statement} break_statement |
+    {continue_statement} continue_statement |
+    {return_statement} return_statement |
+    {synchronized_statement} synchronized_statement |
+    {throw_statement} throw_statement |
+    {try_statement} try_statement;
+
+  statement_no_short_if =
+    {without_trailing_substatement} statement_without_trailing_substatement |
+    {labeled_statement} labeled_statement_no_short_if |
+    {if} if_then_else_statement_no_short_if |
+    {while_statement} while_statement_no_short_if |
+    {for_statement} for_statement_no_short_if;
+
+  // 14.6
+
+  empty_statement =
+    semi;
+
+  // 14.7
+
+  labeled_statement =
+    identifier colon statement;
+
+  labeled_statement_no_short_if =
+    identifier colon statement_no_short_if;
+
+  // 14.8
+
+  expression_statement =
+    statement_expression semi;
+
+  statement_expression =
+    {assignment} assignment |
+    {pre_increment} pre_increment_expression |
+    {pre_decrement} pre_decrement_expression |
+    {post_increment} post_increment_expression |
+    {post_decrement} post_decrement_expression |
+    {method} method_invocation |
+    {class} class_instance_creation_expression;
+
+  // 14.9
+
+  if_then_statement =
+    if_keyword l_par expression r_par statement;
+
+  if_then_else_statement =
+    if_keyword l_par expression r_par statement_no_short_if else_keyword statement;
+
+  if_then_else_statement_no_short_if =
+    if_keyword l_par expression r_par [then_statement]:statement_no_short_if else_keyword [else_statement]:statement_no_short_if;
+
+  // 14.10
+
+  assert_statement =
+    {assert} assert_keyword expression semi |
+    {expression} assert_keyword [expression1]:expression colon [expression2]:expression semi;
+
+  // 14.11
+
+  switch_statement =
+    switch_keyword l_par expression r_par switch_block;
+
+  switch_block =
+    l_brc switch_block_statement_groups? switch_labels? r_brc;
+
+  switch_block_statement_groups =
+    {group} switch_block_statement_group |
+    {groups} switch_block_statement_groups switch_block_statement_group;
+
+  switch_block_statement_group =
+    switch_labels block_statements;
+
+  switch_labels =
+    {label} switch_label |
+    {labels} switch_labels switch_label;
+
+  switch_label =
+    {constant} case_keyword constant_expression colon |
+    {enum} case_keyword enum_constant_name colon |
+    {default} default_keyword colon;
+
+  enum_constant_name =
+    identifier;
+
+  // 14.12
+
+  while_statement =
+    while_keyword l_par expression r_par statement;
+
+  while_statement_no_short_if =
+    while_keyword l_par expression r_par statement_no_short_if;
+
+  // 14.13
+
+  do_statement =
+    do_keyword statement while_keyword l_par expression r_par semi;
+
+  // 14.4
+
+  for_statement =
+    {basic_for} basic_for_statement |
+    {enhanced_for} enhanced_for_statement;
+
+  basic_for_statement =
+    for_keyword l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement;
+
+  for_statement_no_short_if =
+    for_keyword l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement_no_short_if;
+
+  for_init =
+    {statement} statement_expression_list |
+    {local} local_variable_declaration;
+
+  for_update =
+    statement_expression_list;
+
+  statement_expression_list =
+    {expression} statement_expression |
+    {list} statement_expression_list comma statement_expression;
+
+  enhanced_for_statement =
+    for_keyword l_par formal_parameter colon expression r_par statement;
+
+  // 14.15
+
+  break_statement =
+    break_keyword identifier? semi;
+
+  // 14.16
+
+  continue_statement =
+    continue_keyword identifier? semi;
+
+  // 14.17
+
+  return_statement =
+    return_keyword expression? semi;
+
+  // 14.18
+
+  throw_statement =
+    throw_keyword expression semi;
+
+  // 14.19
+
+  synchronized_statement =
+    synchronized_keyword l_par expression r_par block;
+
+  // 14.20
+
+  try_statement =
+    {catch} try_keyword block catches |
+    {finally} try_keyword block catches? finally |
+    {resources} try_with_resources_statement;
+
+  catches =
+    {clause} catch_clause |
+    {catches} catches catch_clause;
+
+  catch_clause =
+    catch_keyword l_par catch_formal_parameter r_par block;
+
+  catch_formal_parameter =
+    variable_modifiers? catch_type variable_declarator_id;
+
+  catch_type =
+    {class} class_type |
+    {catch} class_type bar catch_type;
+
+  finally =
+    finally_keyword block;
+
+  try_with_resources_statement =
+    try_keyword resource_specification block variable_declarator_id catches? finally?;
+
+  resource_specification =
+    l_par resources semi? r_par;
+
+  resources =
+    {resource} resource |
+    {resources} resource semi resources;
+
+  resource =
+    variable_modifiers? type variable_declarator_id assign expression;
+
+  // 15.8
+
+  primary =
+    {primary} primary_no_new_array |
+    {array} array_creation_expression;
+
+  primary_no_new_array =
+    {literal} literal |
+    {type} type dot class_keyword |
+    {void} void_keyword dot class_keyword |
+    {this} this_keyword |
+    {class} class_name dot this_keyword |
+    {expression} l_par expression r_par |
+    {instance} class_instance_creation_expression |
+    {field} field_access |
+    {method} method_invocation |
+    {array} array_access;
+
+  // Missing from JLS
+
+  class_name =
+    type_name;
+
+  // 15.9
+
+  class_instance_creation_expression =
+    {new} new_keyword type_arguments? type_decl_specifier type_arguments_or_diamond? l_par argument_list? r_par class_body? |
+    {primary} primary dot new_keyword type_arguments? identifier type_arguments_or_diamond? l_par argument_list? r_par class_body?;
+
+  type_arguments_or_diamond =
+    {type_arguments} type_arguments |
+    {diamond} lt gt;
+
+  argument_list =
+    {expression} expression |
+    {list} argument_list comma expression;
+
+  // 15.10
+
+  array_creation_expression =
+    {primitive} new_keyword primitive_type dim_exprs dims? |
+    {class} new_keyword class_or_interface_type dim_exprs dims? |
+    {primitive_initializer} new_keyword primitive_type dims array_initializer |
+    {class_initializer} new_keyword class_or_interface_type dims array_initializer;
+
+  dim_exprs =
+    {expr} dim_expr |
+    {exprs} dim_exprs dim_expr;
+
+  dim_expr =
+    l_bkt expression r_bkt;
+
+  dims =
+    {dim} l_bkt r_bkt |
+    {dims} dims l_bkt r_bkt;
+
+  // 15.11
+
+  field_access =
+    {primary} primary dot identifier |
+    {super} super_keyword dot identifier |
+    {class} class_name [dot1]:dot super_keyword [dot2]:dot identifier;
+
+  // 15.12
+
+  method_invocation =
+    {method} method_name l_par argument_list? r_par |
+    {primary} primary dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {super} super_keyword dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {class} class_name [dot1]:dot super_keyword [dot2]:dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {type} type_name dot non_wild_type_arguments identifier l_par argument_list? r_par;
+
+  // 15.13
+
+  array_access =
+    {expression} expression_name l_bkt expression r_bkt |
+    {primary} primary_no_new_array l_bkt expression r_bkt;
+
+  // 15.14
+
+  postfix_expression =
+    {primary} primary |
+    {expression} expression_name |
+    {increment} post_increment_expression |
+    {decrement} post_decrement_expression;
+
+  post_increment_expression =
+    postfix_expression plus_plus;
+
+  post_decrement_expression =
+    postfix_expression minus_minus;
+
+  // 15.15
+
+  unary_expression =
+   {increment} pre_increment_expression |
+   {decrement} pre_decrement_expression |
+   {plus} plus unary_expression |
+   {minus} minus unary_expression |
+   {unary} unary_expression_not_plus_minus;
+
+  pre_increment_expression =
+    plus_plus unary_expression;
+
+  pre_decrement_expression =
+    minus_minus unary_expression;
+
+  unary_expression_not_plus_minus =
+    {postfix} postfix_expression |
+    {tilde} tilde unary_expression |
+    {emark} emark unary_expression |
+    {cast} cast_expression;
+
+  // 15.16
+
+  cast_expression =
+    {primitive} l_par primitive_type r_par unary_expression |
+    {reference} l_par reference_type r_par unary_expression_not_plus_minus;
+
+  // 15.17
+
+  multiplicative_expression =
+    {unary} unary_expression |
+    {star} multiplicative_expression star unary_expression |
+    {slash} multiplicative_expression slash unary_expression |
+    {percent} multiplicative_expression percent unary_expression;
+
+  // 15.18
+
+  additive_expression =
+    {multiplicative} multiplicative_expression |
+    {plus} additive_expression plus multiplicative_expression |
+    {minus} additive_expression minus multiplicative_expression;
+
+  // 15.19
+
+  shift_expression =
+    {additive} additive_expression |
+    {shl} shift_expression shl additive_expression |
+    {shr} shift_expression shr additive_expression |
+    {ushr} shift_expression ushr additive_expression;
+
+  // 15.20
+
+  relational_expression =
+    {shift}     shift_expression |
+    {lt} relational_expression lt shift_expression |
+    {gt} relational_expression gt shift_expression |
+    {lteq} relational_expression lteq shift_expression |
+    {gteq} relational_expression gteq shift_expression |
+    {instanceof} relational_expression instanceof_keyword reference_type;
+
+  // 15.21
+
+  equality_expression =
+    {relational} relational_expression |
+    {eq} equality_expression eq relational_expression |
+    {neq} equality_expression neq relational_expression;
+
+  // 15.22
+
+  and_expression =
+    {equality} equality_expression |
+    {amp} and_expression amp equality_expression;
+
+  exclusive_or_expression =
+    {and} and_expression |
+    {caret} exclusive_or_expression caret and_expression;
+
+  inclusive_or_expression =
+    {or} exclusive_or_expression |
+    {bar} inclusive_or_expression bar exclusive_or_expression;
+
+  // 15.23
+
+  conditional_and_expression =
+    {or} inclusive_or_expression |
+    {amp} conditional_and_expression amp_amp inclusive_or_expression;
+
+  // 15.24
+
+  conditional_or_expression =
+    {and} conditional_and_expression |
+    {bar} conditional_or_expression bar_bar conditional_and_expression;
+
+  // 15.25
+
+  conditional_expression =
+    {or} conditional_or_expression |
+    {qmark} conditional_or_expression qmark expression colon conditional_expression;
+
+  // 15.26
+
+  assignment_expression =
+    {expression} conditional_expression |
+    {assignment} assignment;
+
+  assignment =
+    left_hand_side assignment_operator assignment_expression;
+
+  left_hand_side =
+    {expression} expression_name |
+    {field} field_access |
+    {array} array_access;
+
+  assignment_operator =
+    {assign} assign |
+    {star_assign} star_assign |
+    {slash_assign} slash_assign |
+    {percent_assign} percent_assign |
+    {plus_assign} plus_assign |
+    {minus_assign} minus_assign |
+    {shl_assign} shl_assign |
+    {shr_assign} shr_assign |
+    {ushr_assign} ushr_assign |
+    {amp_assign} amp_assign |
+    {caret_assign} caret_assign |
+    {bar_assign} bar_assign;
+
+  // 15.27
+
+  expression =
+    assignment_expression;
+
+  // 15.28
+
+  constant_expression =
+    expression;

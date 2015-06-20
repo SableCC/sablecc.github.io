@@ -1,0 +1,1814 @@
+/* This file is part of the Java 1.7 grammar for SableCC.
+ *
+ * Copyright 2006,2012 Etienne M. Gagnon <egagnon@j-meg.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Package org.sablecc.grammars.java_1_7;
+
+
+Helpers
+
+  unicode_input_character = [0..0xffff];
+  ht  = 0x0009;
+  lf  = 0x000a;
+  ff  = 0x000c;
+  cr  = 0x000d;
+  sp  = ' ';
+
+  not_star = [unicode_input_character - '*'];
+  not_star_not_slash = [unicode_input_character - ['*' + '/']];
+
+  // Note: Helpers related to java_letter and java_letter_or_digit
+  // have not been verified to exactly match the specification.
+
+  unicode_letter =
+    [0x0041..0x005a] | [0x0061..0x007a] | [0x00aa..0x00aa] | [0x00b5..0x00b5] |
+    [0x00ba..0x00ba] | [0x00c0..0x00d6] | [0x00d8..0x00f6] | [0x00f8..0x01f5] |
+    [0x01fa..0x0217] | [0x0250..0x02a8] | [0x02b0..0x02b8] | [0x02bb..0x02c1] |
+    [0x02d0..0x02d1] | [0x02e0..0x02e4] | [0x037a..0x037a] | [0x0386..0x0386] |
+    [0x0388..0x038a] | [0x038c..0x038c] | [0x038e..0x03a1] | [0x03a3..0x03ce] |
+    [0x03d0..0x03d6] | [0x03da..0x03da] | [0x03dc..0x03dc] | [0x03de..0x03de] |
+    [0x03e0..0x03e0] | [0x03e2..0x03f3] | [0x0401..0x040c] | [0x040e..0x044f] |
+    [0x0451..0x045c] | [0x045e..0x0481] | [0x0490..0x04c4] | [0x04c7..0x04c8] |
+    [0x04cb..0x04cc] | [0x04d0..0x04eb] | [0x04ee..0x04f5] | [0x04f8..0x04f9] |
+    [0x0531..0x0556] | [0x0559..0x0559] | [0x0561..0x0587] | [0x05d0..0x05ea] |
+    [0x05f0..0x05f2] | [0x0621..0x063a] | [0x0640..0x064a] | [0x0671..0x06b7] |
+    [0x06ba..0x06be] | [0x06c0..0x06ce] | [0x06d0..0x06d3] | [0x06d5..0x06d5] |
+    [0x06e5..0x06e6] | [0x0905..0x0939] | [0x093d..0x093d] | [0x0958..0x0961] |
+    [0x0985..0x098c] | [0x098f..0x0990] | [0x0993..0x09a8] | [0x09aa..0x09b0] |
+    [0x09b2..0x09b2] | [0x09b6..0x09b9] | [0x09dc..0x09dd] | [0x09df..0x09e1] |
+    [0x09f0..0x09f1] | [0x0a05..0x0a0a] | [0x0a0f..0x0a10] | [0x0a13..0x0a28] |
+    [0x0a2a..0x0a30] | [0x0a32..0x0a33] | [0x0a35..0x0a36] | [0x0a38..0x0a39] |
+    [0x0a59..0x0a5c] | [0x0a5e..0x0a5e] | [0x0a72..0x0a74] | [0x0a85..0x0a8b] |
+    [0x0a8d..0x0a8d] | [0x0a8f..0x0a91] | [0x0a93..0x0aa8] | [0x0aaa..0x0ab0] |
+    [0x0ab2..0x0ab3] | [0x0ab5..0x0ab9] | [0x0abd..0x0abd] | [0x0ae0..0x0ae0] |
+    [0x0b05..0x0b0c] | [0x0b0f..0x0b10] | [0x0b13..0x0b28] | [0x0b2a..0x0b30] |
+    [0x0b32..0x0b33] | [0x0b36..0x0b39] | [0x0b3d..0x0b3d] | [0x0b5c..0x0b5d] |
+    [0x0b5f..0x0b61] | [0x0b85..0x0b8a] | [0x0b8e..0x0b90] | [0x0b92..0x0b95] |
+    [0x0b99..0x0b9a] | [0x0b9c..0x0b9c] | [0x0b9e..0x0b9f] | [0x0ba3..0x0ba4] |
+    [0x0ba8..0x0baa] | [0x0bae..0x0bb5] | [0x0bb7..0x0bb9] | [0x0c05..0x0c0c] |
+    [0x0c0e..0x0c10] | [0x0c12..0x0c28] | [0x0c2a..0x0c33] | [0x0c35..0x0c39] |
+    [0x0c60..0x0c61] | [0x0c85..0x0c8c] | [0x0c8e..0x0c90] | [0x0c92..0x0ca8] |
+    [0x0caa..0x0cb3] | [0x0cb5..0x0cb9] | [0x0cde..0x0cde] | [0x0ce0..0x0ce1] |
+    [0x0d05..0x0d0c] | [0x0d0e..0x0d10] | [0x0d12..0x0d28] | [0x0d2a..0x0d39] |
+    [0x0d60..0x0d61] | [0x0e01..0x0e2e] | [0x0e30..0x0e30] | [0x0e32..0x0e33] |
+    [0x0e40..0x0e46] | [0x0e81..0x0e82] | [0x0e84..0x0e84] | [0x0e87..0x0e88] |
+    [0x0e8a..0x0e8a] | [0x0e8d..0x0e8d] | [0x0e94..0x0e97] | [0x0e99..0x0e9f] |
+    [0x0ea1..0x0ea3] | [0x0ea5..0x0ea5] | [0x0ea7..0x0ea7] | [0x0eaa..0x0eab] |
+    [0x0ead..0x0eae] | [0x0eb0..0x0eb0] | [0x0eb2..0x0eb3] | [0x0ebd..0x0ebd] |
+    [0x0ec0..0x0ec4] | [0x0ec6..0x0ec6] | [0x0edc..0x0edd] | [0x0f40..0x0f47] |
+    [0x0f49..0x0f69] | [0x10a0..0x10c5] | [0x10d0..0x10f6] | [0x1100..0x1159] |
+    [0x115f..0x11a2] | [0x11a8..0x11f9] | [0x1e00..0x1e9b] | [0x1ea0..0x1ef9] |
+    [0x1f00..0x1f15] | [0x1f18..0x1f1d] | [0x1f20..0x1f45] | [0x1f48..0x1f4d] |
+    [0x1f50..0x1f57] | [0x1f59..0x1f59] | [0x1f5b..0x1f5b] | [0x1f5d..0x1f5d] |
+    [0x1f5f..0x1f7d] | [0x1f80..0x1fb4] | [0x1fb6..0x1fbc] | [0x1fbe..0x1fbe] |
+    [0x1fc2..0x1fc4] | [0x1fc6..0x1fcc] | [0x1fd0..0x1fd3] | [0x1fd6..0x1fdb] |
+    [0x1fe0..0x1fec] | [0x1ff2..0x1ff4] | [0x1ff6..0x1ffc] | [0x207f..0x207f] |
+    [0x2102..0x2102] | [0x2107..0x2107] | [0x210a..0x2113] | [0x2115..0x2115] |
+    [0x2118..0x211d] | [0x2124..0x2124] | [0x2126..0x2126] | [0x2128..0x2128] |
+    [0x212a..0x2131] | [0x2133..0x2138] | [0x3005..0x3005] | [0x3031..0x3035] |
+    [0x3041..0x3094] | [0x309b..0x309e] | [0x30a1..0x30fa] | [0x30fc..0x30fe] |
+    [0x3105..0x312c] | [0x3131..0x318e] | [0x4e00..0x9fa5] | [0xac00..0xd7a3] |
+    [0xf900..0xfa2d] | [0xfb00..0xfb06] | [0xfb13..0xfb17] | [0xfb1f..0xfb28] |
+    [0xfb2a..0xfb36] | [0xfb38..0xfb3c] | [0xfb3e..0xfb3e] | [0xfb40..0xfb41] |
+    [0xfb43..0xfb44] | [0xfb46..0xfbb1] | [0xfbd3..0xfd3d] | [0xfd50..0xfd8f] |
+    [0xfd92..0xfdc7] | [0xfdf0..0xfdfb] | [0xfe70..0xfe72] | [0xfe74..0xfe74] |
+    [0xfe76..0xfefc] | [0xff21..0xff3a] | [0xff41..0xff5a] | [0xff66..0xffbe] |
+    [0xffc2..0xffc7] | [0xffca..0xffcf] | [0xffd2..0xffd7] | [0xffda..0xffdc];
+
+  unicode_digit =
+    [0x0030..0x0039] | [0x0660..0x0669] | [0x06f0..0x06f9] | [0x0966..0x096f] |
+    [0x09e6..0x09ef] | [0x0a66..0x0a6f] | [0x0ae6..0x0aef] | [0x0b66..0x0b6f] |
+    [0x0be7..0x0bef] | [0x0c66..0x0c6f] | [0x0ce6..0x0cef] | [0x0d66..0x0d6f] |
+    [0x0e50..0x0e59] | [0x0ed0..0x0ed9] | [0x0f20..0x0f29] | [0xff10..0xff19];
+
+  java_letter = unicode_letter | '$' | '_';
+  java_letter_or_digit = unicode_letter | unicode_digit | '$' | '_';
+
+  // 3.4
+
+  line_terminator = lf | cr | cr lf;
+  input_character = [unicode_input_character - [cr + lf]];
+
+  // 3.6
+
+  white_space = (sp | ht | ff | line_terminator);
+
+  // 3.7
+
+  traditional_comment = '/*' not_star* ('*' (not_star_not_slash not_star*)?)* '*/';
+
+  // The line terminator is made optional to accept comments on the last line
+  // (followed by eof).
+
+  end_of_line_comment = '//' input_character* line_terminator?;
+
+  // 3.10
+
+  underscores = '_'+;
+
+  binary_digit = '0' | '1';
+  binary_digit_or_underscore = binary_digit | '_';
+  binary_digits_and_underscores = binary_digit_or_underscore+;
+  binary_digits = binary_digit | binary_digit binary_digits_and_underscores? binary_digit;
+  binary_numeral = '0' ('b' | 'B') binary_digits;
+
+  octal_digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
+  octal_digit_or_underscore = octal_digit | '_';
+  octal_digits_and_underscores = octal_digit_or_underscore+;
+  octal_digits = octal_digit | octal_digit octal_digits_and_underscores? octal_digit;
+  octal_numeral = '0' octal_digits | '0' underscores octal_digits;
+
+  hex_digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+  hex_digit_or_underscore = hex_digit | '_';
+  hex_digits_and_underscores = hex_digit_or_underscore+;
+  hex_digits = hex_digit | hex_digit hex_digits_and_underscores? hex_digit;
+  hex_numeral = '0' ('x' | 'X') hex_digits;
+
+  non_zero_digit = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+  digit = '0' | non_zero_digit;
+  digit_or_underscore = digit | '_';
+  digits_and_underscores = digit_or_underscore+;
+  digits = digit | digit digits_and_underscores? digit;
+  decimal_numeral = '0' | non_zero_digit digits? | non_zero_digit underscores digits;
+
+  integer_type_suffix = 'l' | 'L';
+
+  decimal_integer_literal = decimal_numeral integer_type_suffix?;
+  hex_integer_literal = hex_numeral integer_type_suffix?;
+  octal_integer_literal = octal_numeral integer_type_suffix?;
+  binary_integer_literal = binary_numeral integer_type_suffix?;
+
+  float_type_suffix = 'f' | 'F' | 'd' | 'D';
+  sign = '-' | '+';
+  signed_integer = sign? digits;
+  exponent_indicator = 'e' | 'E';
+  exponent_part = exponent_indicator signed_integer;
+  decimal_floating_point_literal =
+    digits '.' digits? exponent_part? float_type_suffix? |
+    '.' digits exponent_part? float_type_suffix? |
+    digits exponent_part float_type_suffix? |
+    digits exponent_part? float_type_suffix;
+
+  binary_exponent_indicator = 'p' | 'P';
+  binary_exponent = binary_exponent_indicator signed_integer;
+  hex_significand = hex_numeral | hex_numeral '.' | '0' ('x' | 'X') hex_digits? '.' hex_digits;
+  hexadecimal_floating_point_literal = hex_significand binary_exponent float_type_suffix?;
+
+  single_character = [input_character - [''' + '\']];
+
+  zero_to_three = '0' | '1' | '2' | '3';
+  octal_escape = '\' octal_digit | '\' octal_digit octal_digit | '\' zero_to_three octal_digit octal_digit;
+  escape_sequence = '\b' | '\t' | '\n' | '\f' | '\r' | '\"' | '\' ''' | '\\' | octal_escape;
+
+  string_character = [input_character - ['"' + '\']] | escape_sequence;
+
+Tokens
+
+  // 3.7
+
+  comment = traditional_comment | end_of_line_comment;
+
+  // 3.9
+
+  abstract_keyword = 'abstract';
+  assert_keyword = 'assert';
+  boolean_keyword = 'boolean';
+  break_keyword = 'break';
+  byte_keyword = 'byte';
+  case_keyword = 'case';
+  catch_keyword = 'catch';
+  char_keyword = 'char';
+  class_keyword = 'class';
+  const_keyword = 'const';
+
+  continue_keyword = 'continue';
+  default_keyword = 'default';
+  do_keyword = 'do';
+  double_keyword = 'double';
+  else_keyword = 'else';
+  enum_keyword = 'enum';
+  extends_keyword = 'extends';
+  final_keyword = 'final';
+  finally_keyword = 'finally';
+  float_keyword = 'float';
+
+  for_keyword = 'for';
+  if_keyword = 'if';
+  goto_keyword = 'goto';
+  implements_keyword = 'implements';
+  import_keyword = 'import';
+  instanceof_keyword = 'instanceof';
+  int_keyword = 'int';
+  interface_keyword = 'interface';
+  long_keyword = 'long';
+  native_keyword = 'native';
+
+  new_keyword = 'new';
+  package_keyword = 'package';
+  private_keyword = 'private';
+  protected_keyword = 'protected';
+  public_keyword = 'public';
+  return_keyword = 'return';
+  short_keyword = 'short';
+  static_keyword = 'static';
+  strictfp_keyword = 'strictfp';
+  super_keyword = 'super';
+
+  switch_keyword = 'switch';
+  synchronized_keyword = 'synchronized';
+  this_keyword = 'this';
+  throw_keyword = 'throw';
+  throws_keyword = 'throws';
+  transient_keyword = 'transient';
+  try_keyword = 'try';
+  void_keyword = 'void';
+  volatile_keyword = 'volatile';
+  while_keyword = 'while';
+
+  // 3.10
+
+  integer_literal = decimal_integer_literal | hex_integer_literal | octal_integer_literal | binary_integer_literal;
+  floating_point_literal = decimal_floating_point_literal | hexadecimal_floating_point_literal;
+  boolean_literal = 'true' | 'false';
+  character_literal = ''' single_character ''' | ''' escape_sequence ''';
+  string_literal = '"' string_character* '"';
+  null_literal = 'null';
+
+  // 3.8
+
+  identifier = java_letter java_letter_or_digit*;
+
+  // 3.11
+
+  l_par = '(';
+  r_par = ')';
+  l_brc = '{';
+  r_brc = '}';
+  l_bkt = '[';
+  r_bkt = ']';
+  semi = ';';
+  comma = ',';
+  dot   = '.';
+
+  // 3.12
+
+  assign = '=';
+  lt = '<';
+  gt = '>';
+  emark = '!';
+  tilde = '~';
+  qmark = '?';
+  colon = ':';
+
+  eq = '==';
+  lteq = '<=';
+  gteq = '>=';
+  neq = '!=';
+  amp_amp = '&&';
+  bar_bar = '||';
+  plus_plus = '++';
+  minus_minus = '--';
+
+  plus = '+';
+  minus = '-';
+  star = '*';
+  slash = '/';
+  amp = '&';
+  bar = '|';
+  caret = '^';
+  percent = '%';
+  shl = '<<';
+  shr = '>>';
+  ushr = '>>>';
+
+  plus_assign = '+=';
+  minus_assign = '-=';
+  star_assign = '*=';
+  slash_assign = '/=';
+  amp_assign = '&=';
+  bar_assign = '|=';
+  caret_assign = '^=';
+  percent_assign = '%=';
+  shl_assign = '<<=';
+  shr_assign = '>>=';
+  ushr_assign = '>>>=';
+
+  // Missing from Chapter 3 of JLS
+
+  dot_dot_dot = '...';
+  at = '@';
+
+  // make a single long white_spaces token
+  white_spaces = white_space+;
+
+
+Ignored Tokens
+
+  white_spaces, comment;
+
+
+Productions
+
+  java_compilation_unit =
+    compilation_unit;
+
+  // 3.10
+
+  literal =
+    {integer} integer_literal |
+    {floating_point} floating_point_literal |
+    {boolean} boolean_literal |
+    {character} character_literal |
+    {string} string_literal |
+    {null} null_literal;
+
+  // 4.1
+
+  type =
+    {primitive} primitive_type |
+    {reference} reference_type;
+
+  type_no_arguments =
+    {primitive} primitive_type |
+    {reference} reference_type_no_arguments;
+
+  // 4.2
+
+  primitive_type =
+    {numeric} numeric_type |
+    {boolean} boolean_keyword;
+
+  numeric_type =
+    {integral} integral_type |
+    {floating} floating_point_type;
+
+  integral_type =
+    {byte} byte_keyword |
+    {short} short_keyword |
+    {int} int_keyword |
+    {long} long_keyword |
+    {char} char_keyword;
+
+  floating_point_type =
+    {float} float_keyword |
+    {double} double_keyword;
+
+  // 4.3
+
+  //reference_type =
+  //  {class} class_or_interface_type |
+  //  {variable} type_variable |
+  //  {array} array_type;
+
+  reference_type =
+    {class} class_or_interface_type |
+    {array} array_type;
+
+  reference_type_no_arguments =
+    {class} class_or_interface_type_no_arguments |
+    {array} array_type_no_arguments;
+
+  //class_or_interface_type =
+  //  {class} class_type |
+  //  {interface} interface_type;
+
+  class_or_interface_type_no_arguments =
+    name;
+
+  class_or_interface_type =
+    type_decl_specifier type_arguments?;
+
+  class_type =
+    type_decl_specifier type_arguments?;
+
+  interface_type =
+    type_decl_specifier type_arguments?;
+
+  //type_decl_specifier =
+  //  {name} name |
+  //  {identifier} class_or_interface_type dot identifier;
+
+  type_decl_specifier =
+    name type_decl_specifier_tail*;
+
+  type_decl_specifier_tail =
+    type_arguments dot name;
+
+  // defined differently in 6.5
+  //
+  // type_name =
+  //   {identifier} identifier |
+  //   {type} type_name dot identifier;
+
+  //type_variable =
+  //  identifier;
+
+  //array_type =
+  //  type l_bkt r_bkt;
+
+  array_type =
+    {class} class_or_interface_type dim+ |
+    {primitive} primitive_type dim+;
+
+  array_type_no_arguments =
+    {class} class_or_interface_type_no_arguments dim+ |
+    {primitive} primitive_type dim+;
+
+  // 4.4
+
+  //type_parameter =
+  //  type_variable type_bound?;
+
+  type_parameter =
+    identifier type_bound?;
+
+  //type_bound =
+  //  {variable} extends_keyword type_variable |
+  //  {class} extends_keyword class_or_interface_type additional_bound_list?;
+
+  type_bound =
+    extends_keyword class_or_interface_type additional_bound_list?;
+
+  additional_bound_list =
+    {list} additional_bound additional_bound_list |
+    {bound} additional_bound;
+
+  additional_bound =
+    amp interface_type;
+
+  // 4.5
+
+  //type_arguments =
+  //  lt type_argument_list gt;
+
+  // Take care of the following lexical anomaly:
+  //   A<B<C>>  and  A<B<C<D>>>
+  // Notice the '>>' and '>>>" tokens.
+
+  type_arguments =
+    {gt} lt type_argument_list gt |
+    {shr} [lt1]:lt type_argument_list_head* type_decl_specifier [lt2]:lt type_argument_list shr |
+    {ushr} [lt1]:lt [heads1]:type_argument_list_head* [specifier1]:type_decl_specifier [lt2]:lt [heads2]:type_argument_list_head* [specifier2]:type_decl_specifier [lt3]:lt type_argument_list ushr;
+
+  //type_argument_list =
+  //  {argument} type_argument |
+  //  {list} type_argument_list comma type_argument;
+
+  type_argument_list =
+    type_argument_list_head* type_argument;
+
+  type_argument_list_head =
+    type_argument comma;
+
+  type_argument =
+    {reference} reference_type |
+    {wildcard} wildcard;
+
+  wildcard =
+    qmark wildcard_bounds?;
+
+  wildcard_bounds =
+    {extends} extends_keyword reference_type |
+    {super} super_keyword reference_type;
+
+  // 6.5
+
+  // Replaced by name
+
+  //package_name =
+  //  {identifier} identifier |
+  //  {package} package_name dot identifier;
+
+  //type_name =
+  //  {identifier} identifier |
+  //  {type} package_or_type_name dot identifier;
+
+  //expression_name =
+  //  {identifier} identifier |
+  //  {ambiguous} ambiguous_name dot identifier;
+
+  //method_name =
+  //  {identifier} identifier |
+  //  {ambiguous} ambiguous_name dot identifier;
+
+  //package_or_type_name =
+  //  {identifier} identifier |
+  //  {type} package_or_type_name dot identifier;
+
+  //ambiguous_name =
+  //  {identifier} identifier |
+  //  {ambiguous} ambiguous_name dot identifier;
+
+  name =
+    identifier name_tail*;
+
+  name_tail =
+    dot identifier;
+
+
+  // 7.3
+
+  compilation_unit =
+    package_declaration? import_declarations? type_declarations?;
+
+  import_declarations =
+    {declaration} import_declaration |
+    {declarations} import_declarations import_declaration;
+
+  type_declarations =
+    {declaration} type_declaration |
+    {declarations} type_declarations type_declaration;
+
+  // 7.4
+
+  //package_declaration =
+  //  annotations? package_keyword package_name semi;
+
+  // modifiers? instead of annotations?
+
+  package_declaration =
+    modifiers? package_keyword name semi;
+
+  // 7.5
+
+  import_declaration =
+    {single} single_type_import_declaration |
+    {type} type_import_on_demand_declaration |
+    {static} single_static_import_declaration |
+    {demand} static_import_on_demand_declaration;
+
+  single_type_import_declaration =
+    import_keyword name semi;
+
+  type_import_on_demand_declaration =
+    import_keyword name dot star semi;
+
+  single_static_import_declaration =
+    import_keyword static_keyword name dot identifier semi;
+
+  static_import_on_demand_declaration =
+    import_keyword static_keyword name dot star semi;
+
+  // 7.6
+
+  type_declaration =
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {semi} semi;
+
+  // 8.1
+
+  class_declaration =
+    {class} normal_class_declaration |
+    {enum} enum_declaration;
+
+  normal_class_declaration =
+    modifiers? class_keyword identifier type_parameters? super? interfaces? class_body;
+
+  // Replaced by modifiers production
+
+  //class_modifiers =
+  //  {modifier} class_modifier |
+  //  {modifiers} class_modifiers class_modifier;
+
+  modifiers =
+    {modifier} modifier |
+    {modifiers} modifiers modifier;
+
+  // Replaced by modifier production
+
+  //class_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {protected} protected_keyword |
+  //  {private} private_keyword |
+  //  {abstract} abstract_keyword |
+  //  {static} static_keyword |
+  //  {final} final_keyword |
+  //  {strictfp} strictfp_keyword;
+
+  modifier =
+    {annotation} annotation |
+    {public} public_keyword |
+    {protected} protected_keyword |
+    {private} private_keyword |
+    {abstract} abstract_keyword |
+    {static} static_keyword |
+    {final} final_keyword |
+    {strictfp} strictfp_keyword |
+    {transient} transient_keyword |
+    {volatile} volatile_keyword |
+    {synchronized} synchronized_keyword |
+    {native} native_keyword;
+
+  type_parameters =
+    lt type_parameter_list gt;
+
+  type_parameter_list =
+    {list} type_parameter_list comma type_parameter |
+    {parameter} type_parameter;
+
+  super =
+    extends_keyword class_type;
+
+  interfaces =
+    implements_keyword interface_type_list;
+
+  interface_type_list =
+    {type} interface_type |
+    {list} interface_type_list comma interface_type;
+
+  class_body =
+    l_brc class_body_declarations? r_brc;
+
+  class_body_declarations =
+    {declaration} class_body_declaration |
+    {declarations} class_body_declarations class_body_declaration;
+
+  class_body_declaration =
+    {member} class_member_declaration |
+    {instance} instance_initializer |
+    {static} static_initializer |
+    {constructor} constructor_declaration;
+
+  class_member_declaration =
+    {field} field_declaration |
+    {method} method_declaration |
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {semi} semi;
+
+  // 8.3
+
+  field_declaration =
+    modifiers? type variable_declarators semi;
+
+  variable_declarators =
+    {declarator} variable_declarator |
+    {declarators} variable_declarators comma variable_declarator;
+
+  //variable_declarator =
+  //  {id} variable_declarator_id |
+  //  {initializer} variable_declarator_id assign variable_initializer;
+
+  variable_declarator =
+    {id} variable_declarator_id |
+    {initializer} variable_declarator_id assign variable_initializer_no_name |
+    {initializer_name} variable_declarator_id assign name;
+
+  //variable_declarator_id =
+  //  {identifier} identifier |
+  //  {variable} variable_declarator_id l_bkt r_bkt;
+
+  variable_declarator_id =
+    identifier dim*;
+
+  //variable_initializer =
+  //  {expression} expression |
+  //  {initializer} array_initializer;
+
+  variable_initializer_no_name =
+    {expression} expression_no_name |
+    {initializer} array_initializer;
+
+  // Replaced by modifiers production
+
+  //field_modifiers =
+  //  {modifier} field_modifier |
+  //  {modifiers} field_modifiers field_modifier;
+
+  // Replaced by modifier production
+
+  //field_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {protected} protected_keyword |
+  //  {private} private_keyword |
+  //  {static} static_keyword |
+  //  {final} final_keyword |
+  //  {transient} transient_keyword |
+  //  {volatile} volatile_keyword;
+
+  // 8.4
+
+  method_declaration =
+    method_header method_body;
+
+  method_header =
+    modifiers? type_parameters? result method_declarator throws?;
+
+  //method_declarator =
+  //  {identifier} identifier l_par formal_parameter_list? r_par |
+  //  {declarator} method_declarator l_bkt r_bkt;
+
+  method_declarator =
+    identifier l_par formal_parameter_list? r_par dim*;
+
+  formal_parameter_list =
+    {parameter} last_formal_parameter |
+    {parameters} formal_parameters comma last_formal_parameter;
+
+  formal_parameters =
+    {parameter} formal_parameter |
+    {parameters} formal_parameters comma formal_parameter;
+
+  formal_parameter =
+    modifiers? type variable_declarator_id;
+
+  // Replaced by modifiers production
+
+  //variable_modifiers =
+  //  {modifier} variable_modifier |
+  //  {modifiers} variable_modifiers variable_modifier;
+
+  // Replaced by modifier production
+
+  //variable_modifier =
+  //  {annotation} annotation |
+  //  {final} final_keyword;
+
+  last_formal_parameter =
+    {variable} modifiers? type dot_dot_dot variable_declarator_id |
+    {formal} formal_parameter;
+
+  // Replaced by modifiers production
+
+  //method_modifiers =
+  //  {modifier} method_modifier |
+  //  {modifiers} method_modifiers method_modifier;
+
+  // Replaced by modifier production
+
+  //method_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {protected} protected_keyword |
+  //  {private} private_keyword |
+  //  {abstract} abstract_keyword |
+  //  {static} static_keyword |
+  //  {final} final_keyword |
+  //  {synchronized} synchronized_keyword |
+  //  {native} native_keyword |
+  //  {strictfp} strictfp_keyword;
+
+  result =
+    {type} type |
+    {void} void_keyword;
+
+  throws =
+    throws_keyword exception_type_list;
+
+  exception_type_list =
+    {type} exception_type |
+    {list} exception_type_list comma exception_type;
+
+  //exception_type =
+  //  {name} name |
+  //  {variable} type_variable;
+
+  exception_type =
+    name;
+
+  method_body =
+    {block} block |
+    {semi} semi;
+
+
+  // 8.6
+
+  instance_initializer =
+    block;
+
+  // 8.7
+
+  static_initializer =
+    static_keyword block;
+
+  // 8.8
+
+  constructor_declaration =
+    modifiers? constructor_declarator throws? constructor_body;
+
+  constructor_declarator =
+    type_parameters? simple_type_name l_par formal_parameter_list? r_par;
+
+  // Missing from JLS
+
+  simple_type_name =
+    identifier;
+
+  // Replaced by modifiers production
+
+  //constructor_modifiers =
+  //  {modifier} constructor_modifier |
+  //  {modifiers} constructor_modifiers constructor_modifier;
+
+  // Replaced by modifier production
+
+  //constructor_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {protected} protected_keyword |
+  //  {private} private_keyword;
+
+  constructor_body =
+    l_brc explicit_constructor_invocation? block_statements? r_brc;
+
+  explicit_constructor_invocation =
+    {this} non_wild_type_arguments? this_keyword l_par argument_list? r_par semi |
+    {super} non_wild_type_arguments? super_keyword l_par argument_list? r_par semi |
+    {primary} primary dot non_wild_type_arguments? super_keyword l_par argument_list? r_par semi;
+
+  non_wild_type_arguments =
+    lt reference_type_list gt;
+
+  reference_type_list =
+    {type} reference_type |
+    {list} reference_type_list comma reference_type;
+
+  // 8.9
+
+  enum_declaration =
+    modifiers? enum_keyword identifier interfaces? enum_body;
+
+  enum_body =
+    l_brc enum_constants? comma? enum_body_declarations? r_brc;
+
+  enum_constants =
+    {constant} enum_constant |
+    {constants} enum_constants comma enum_constant;
+
+  //enum_constant =
+  //  annotations? identifier arguments? class_body?;
+
+  // modifiers? instead of annotations?
+
+  enum_constant =
+    modifiers? identifier arguments? class_body?;
+
+  arguments =
+    l_par argument_list? r_par;
+
+  enum_body_declarations =
+    semi class_body_declarations?;
+
+  // 9.1
+
+  interface_declaration =
+    {interface} normal_interface_declaration |
+    {annotation} annotation_type_declaration;
+
+  // Includes correction to erroneous split in two alternatives in JLS
+
+  normal_interface_declaration =
+    modifiers? interface_keyword identifier type_parameters? extends_interfaces? interface_body;
+
+  // Replaced by modifiers production
+
+  //interface_modifiers =
+  //  {modifier} interface_modifier |
+  //  {modifiers} interface_modifiers interface_modifier;
+
+  // Replaced by modifier production
+
+  //interface_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {protected} protected_keyword |
+  //  {private} private_keyword |
+  //  {abstract} abstract_keyword |
+  //  {static} static_keyword |
+  //  {strictfp} strictfp_keyword;
+
+  extends_interfaces =
+    extends_keyword interface_type_list;
+
+  interface_body =
+    l_brc interface_member_declarations? r_brc;
+
+  interface_member_declarations =
+    {declaration} interface_member_declaration |
+    {declarations} interface_member_declarations interface_member_declaration;
+
+  interface_member_declaration =
+     {constant} constant_declaration |
+     {method} abstract_method_declaration |
+     {class} class_declaration |
+     {interface} interface_declaration |
+     {semi} semi;
+
+  // 9.3
+
+  constant_declaration =
+    modifiers? type variable_declarators semi;
+
+  // Replaced by modifiers production
+
+  //constant_modifiers =
+  //  {modifier} constant_modifier |
+  //  {modifiers} constant_modifiers constant_modifier;
+
+  // Replaced by modifier production
+
+  //constant_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {static} static_keyword |
+  //  {final} final_keyword;
+
+  // 9.4
+
+  abstract_method_declaration =
+    modifiers? type_parameters? result method_declarator throws? semi;
+
+  // Replaced by modifiers production
+
+  //abstract_method_modifiers =
+  //  {modifier} abstract_method_modifier |
+  //  {modifiers} abstract_method_modifiers abstract_method_modifier;
+
+  // Replaced by modifier production
+
+  //abstract_method_modifier =
+  //  {annotation} annotation |
+  //  {public} public_keyword |
+  //  {abstract} abstract_keyword;
+
+  // 9.6
+
+  annotation_type_declaration =
+    modifiers? at interface_keyword identifier annotation_type_body;
+
+  annotation_type_body =
+    l_brc annotation_type_element_declarations? r_brc;
+
+  annotation_type_element_declarations =
+    {declaration} annotation_type_element_declaration |
+    {declarations} annotation_type_element_declarations annotation_type_element_declaration;
+
+  //annotation_type_element_declaration =
+  //  {abstract} modifiers? type identifier l_par r_par dims? default_value? semi |
+  //  {constant} constant_declaration |
+  //  {class} class_declaration |
+  //  {interface} interface_declaration |
+  //  {enum} enum_declaration |
+  //  {annotation} annotation_type_declaration |
+  //  {semi} semi;
+
+  annotation_type_element_declaration =
+    {abstract} modifiers? type identifier l_par r_par dim* default_value? semi |
+    {constant} constant_declaration |
+    {class} class_declaration |
+    {interface} interface_declaration |
+    {semi} semi;
+
+  default_value =
+    default_keyword element_value;
+
+  // 9.7
+
+  annotations =
+    {annotation} annotation |
+    {annotations} annotations annotation;
+
+  annotation =
+    {normal_annotation} normal_annotation |
+    {marker_annotation} marker_annotation |
+    {single} single_element_annotation;
+
+  normal_annotation =
+    at name l_par element_value_pairs? r_par;
+
+  element_value_pairs =
+    {pair} element_value_pair |
+    {pairs} element_value_pairs comma element_value_pair;
+
+  element_value_pair =
+    identifier assign element_value;
+
+  //element_value =
+  //  {conditional} conditional_expression |
+  //  {annotation} annotation |
+  //  {array} element_value_array_initializer;
+
+  element_value =
+    {conditional} conditional_expression_no_name |
+    {name} name |
+    {annotation} annotation |
+    {array} element_value_array_initializer;
+
+  element_value_array_initializer =
+    l_brc element_values? comma? r_brc;
+
+  element_values =
+    {value} element_value |
+    {values} element_values comma element_value;
+
+  marker_annotation =
+    at identifier;
+
+  single_element_annotation =
+    at identifier l_par element_value r_par;
+
+  // 10.6
+
+  //array_initializer =
+  //  l_brc variable_initializers? comma? r_brc;
+
+  array_initializer =
+    {variable} l_brc variable_initializers_no_name? comma? r_brc |
+    {name} l_brc name comma? r_brc;
+
+  //variable_initializers =
+  //  {initializer} variable_initializer |
+  //  {initializers} variable_initializers comma variable_initializer;
+
+  variable_initializers_no_name =
+    {variable} variable_initializer_no_name variable_initializers_tail* |
+    {name} name variable_initializers_tail+;
+
+  variable_initializers_tail =
+    {variable} comma variable_initializer_no_name |
+    {name} comma name;
+
+  // 14.2
+
+  block =
+    l_brc block_statements? r_brc;
+
+  block_statements =
+    {statement} block_statement |
+    {statements} block_statements block_statement;
+
+  block_statement =
+    {variable} local_variable_declaration_statement |
+    {class} class_declaration |
+    {statement} statement;
+
+  // 14.4
+
+  local_variable_declaration_statement =
+    local_variable_declaration semi;
+
+  local_variable_declaration =
+    modifiers? type variable_declarators;
+
+  // 14.5
+
+  statement =
+    {without_trailing_substatement} statement_without_trailing_substatement |
+    {labeled_statement} labeled_statement |
+    {if} if_then_statement |
+    {if_else} if_then_else_statement |
+    {while_statement} while_statement |
+    {for_statement} for_statement;
+
+  statement_without_trailing_substatement =
+    {block} block |
+    {empty_statement} empty_statement |
+    {expression_statement} expression_statement |
+    {assert_statement} assert_statement |
+    {switch_statement} switch_statement |
+    {do_statement} do_statement |
+    {break_statement} break_statement |
+    {continue_statement} continue_statement |
+    {return_statement} return_statement |
+    {synchronized_statement} synchronized_statement |
+    {throw_statement} throw_statement |
+    {try_statement} try_statement;
+
+  statement_no_short_if =
+    {without_trailing_substatement} statement_without_trailing_substatement |
+    {labeled_statement} labeled_statement_no_short_if |
+    {if} if_then_else_statement_no_short_if |
+    {while_statement} while_statement_no_short_if |
+    {for_statement} for_statement_no_short_if;
+
+  // 14.6
+
+  empty_statement =
+    semi;
+
+  // 14.7
+
+  labeled_statement =
+    identifier colon statement;
+
+  labeled_statement_no_short_if =
+    identifier colon statement_no_short_if;
+
+  // 14.8
+
+  expression_statement =
+    statement_expression semi;
+
+  statement_expression =
+    {assignment} assignment |
+    {pre_increment} pre_increment_expression |
+    {pre_decrement} pre_decrement_expression |
+    {post_increment} post_increment_expression |
+    {post_decrement} post_decrement_expression |
+    {method} method_invocation |
+    {class} class_instance_creation_expression;
+
+  // 14.9
+
+  //if_then_statement =
+  //  if_keyword l_par expression r_par statement;
+
+  if_then_statement =
+    {expression} if_keyword l_par expression_no_name r_par statement |
+    {name} if_keyword l_par name r_par statement;
+
+  //if_then_else_statement =
+  //  if_keyword l_par expression r_par statement_no_short_if else_keyword statement;
+
+  if_then_else_statement =
+    {expression} if_keyword l_par expression_no_name r_par statement_no_short_if else_keyword statement |
+    {name} if_keyword l_par name r_par statement_no_short_if else_keyword statement;
+
+  //if_then_else_statement_no_short_if =
+  //  if_keyword l_par expression r_par [then_statement]:statement_no_short_if else_keyword [else_statement]:statement_no_short_if;
+
+  if_then_else_statement_no_short_if =
+    {expression} if_keyword l_par expression_no_name r_par [then_statement]:statement_no_short_if else_keyword [else_statement]:statement_no_short_if |
+    {name} if_keyword l_par name r_par [then_statement]:statement_no_short_if else_keyword [else_statement]:statement_no_short_if;
+
+  // 14.10
+
+  //assert_statement =
+  //  {assert} assert_keyword expression semi |
+  //  {expression} assert_keyword [expression1]:expression colon [expression2]:expression semi;
+
+  assert_statement =
+    {assert} assert_keyword expression_no_name semi |
+    {assert_name} assert_keyword name semi |
+    {expression} assert_keyword [expression1]:expression_no_name colon [expression2]:expression_no_name semi |
+    {expression_name2} assert_keyword [expression1]:expression_no_name colon [expression2]:name semi |
+    {expression_name1} assert_keyword [expression1]:name colon [expression2]:expression_no_name semi |
+    {expression_name1_name2} assert_keyword [expression1]:name colon [expression2]:name semi;
+
+  // 14.11
+
+  //switch_statement =
+  //  switch_keyword l_par expression r_par switch_block;
+
+  switch_statement =
+    {expression} switch_keyword l_par expression_no_name r_par switch_block |
+    {name} switch_keyword l_par name r_par switch_block;
+
+  switch_block =
+    l_brc switch_block_statement_groups? switch_labels? r_brc;
+
+  switch_block_statement_groups =
+    {group} switch_block_statement_group |
+    {groups} switch_block_statement_groups switch_block_statement_group;
+
+  switch_block_statement_group =
+    switch_labels block_statements;
+
+  switch_labels =
+    {label} switch_label |
+    {labels} switch_labels switch_label;
+
+  //switch_label =
+  //  {constant} case_keyword constant_expression colon |
+  //  {enum} case_keyword enum_constant_name colon |
+  //  {default} default_keyword colon;
+
+  //switch_label =
+  //  {constant} case_keyword constant_expression_no_name colon |
+  //  {constant_name} case_keyword name colon |
+  //  {enum} case_keyword enum_constant_name colon |
+  //  {default} default_keyword colon;
+
+  switch_label =
+    {constant} case_keyword constant_expression_no_name colon |
+    {constant_name} case_keyword name colon |
+    {default} default_keyword colon;
+
+  //enum_constant_name =
+  //  identifier;
+
+  // 14.12
+
+  //while_statement =
+  //  while_keyword l_par expression r_par statement;
+
+  while_statement =
+    {expression} while_keyword l_par expression_no_name r_par statement |
+    {name} while_keyword l_par name r_par statement;
+
+  //while_statement_no_short_if =
+  //  while_keyword l_par expression r_par statement_no_short_if;
+
+  while_statement_no_short_if =
+    {expression} while_keyword l_par expression_no_name r_par statement_no_short_if |
+    {name} while_keyword l_par name r_par statement_no_short_if;
+
+  // 14.13
+
+  //do_statement =
+  //  do_keyword statement while_keyword l_par expression r_par semi;
+
+  do_statement =
+    {expression} do_keyword statement while_keyword l_par expression_no_name r_par semi |
+    {name} do_keyword statement while_keyword l_par name r_par semi;
+
+  // 14.4
+
+  for_statement =
+    {basic_for} basic_for_statement |
+    {enhanced_for} enhanced_for_statement;
+
+  //basic_for_statement =
+  //  for_keyword l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement;
+
+  basic_for_statement =
+    {expression} for_keyword l_par for_init? [semi1]:semi expression_no_name? [semi2]:semi for_update? r_par statement |
+    {name} for_keyword l_par for_init? [semi1]:semi name [semi2]:semi for_update? r_par statement;
+
+  //for_statement_no_short_if =
+  //  for_keyword l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement_no_short_if;
+
+  for_statement_no_short_if =
+    {expression} for_keyword l_par for_init? [semi1]:semi expression_no_name? [semi2]:semi for_update? r_par statement_no_short_if |
+    {name} for_keyword l_par for_init? [semi1]:semi name [semi2]:semi for_update? r_par statement_no_short_if;
+
+  for_init =
+    {statement} statement_expression_list |
+    {local} local_variable_declaration;
+
+  for_update =
+    statement_expression_list;
+
+  statement_expression_list =
+    {expression} statement_expression |
+    {list} statement_expression_list comma statement_expression;
+
+  //enhanced_for_statement =
+  //  for_keyword l_par formal_parameter colon expression r_par statement;
+
+  enhanced_for_statement =
+    {expression} for_keyword l_par formal_parameter colon expression_no_name r_par statement |
+    {name} for_keyword l_par formal_parameter colon name r_par statement;
+
+  // 14.15
+
+  break_statement =
+    break_keyword identifier? semi;
+
+  // 14.16
+
+  continue_statement =
+    continue_keyword identifier? semi;
+
+  // 14.17
+
+  //return_statement =
+  //  return_keyword expression? semi;
+
+  return_statement =
+    {expression} return_keyword expression_no_name? semi |
+    {name} return_keyword name semi;
+
+  // 14.18
+
+  //throw_statement =
+  //  throw_keyword expression semi;
+
+  throw_statement =
+    {expression} throw_keyword expression_no_name semi |
+    {name} throw_keyword name semi;
+
+  // 14.19
+
+  //synchronized_statement =
+  //  synchronized_keyword l_par expression r_par block;
+
+  synchronized_statement =
+    {expression} synchronized_keyword l_par expression_no_name r_par block |
+    {name} synchronized_keyword l_par name r_par block;
+
+  // 14.20
+
+  try_statement =
+    {catch} try_keyword block catches |
+    {finally} try_keyword block catches? finally |
+    {resources} try_with_resources_statement;
+
+  catches =
+    {clause} catch_clause |
+    {catches} catches catch_clause;
+
+  catch_clause =
+    catch_keyword l_par catch_formal_parameter r_par block;
+
+  catch_formal_parameter =
+    modifiers? catch_type variable_declarator_id;
+
+  catch_type =
+    {class} class_type |
+    {catch} class_type bar catch_type;
+
+  finally =
+    finally_keyword block;
+
+  try_with_resources_statement =
+    try_keyword resource_specification block variable_declarator_id catches? finally?;
+
+  resource_specification =
+    l_par resources semi? r_par;
+
+  //resources =
+  //  {resource} resource |
+  //  {resources} resource semi resources;
+
+  // use left recursion, instead of right recursion
+
+  resources =
+    {resource} resource |
+    {resources} resources semi resource;
+
+  //resource =
+  //  modifiers? type variable_declarator_id assign expression;
+
+  resource =
+    {expression} modifiers? type variable_declarator_id assign expression_no_name |
+    {name} modifiers? type variable_declarator_id assign name;
+
+  // 15.8
+
+  primary =
+    {primary} primary_no_new_array |
+    {array} array_creation_expression;
+
+  //primary_no_new_array =
+  //  {literal} literal |
+  //  {type} type dot class_keyword |
+  //  {void} void_keyword dot class_keyword |
+  //  {this} this_keyword |
+  //  {class} class_name dot this_keyword |
+  //  {expression} l_par expression r_par |
+  //  {instance} class_instance_creation_expression |
+  //  {field} field_access |
+  //  {method} method_invocation |
+  //  {array} array_access;
+
+  // The LL grammar in the JLS appendix does not accept reference
+  // types with type arguments in the following alternative:
+  //   {type} type dot class_keyword
+  // In other words, the following code is invalid:
+  //   Class c = A<B>.class
+  // This contradicts the definition in 15.8.
+  // But, we modify the grammar accordingly, to eliminate
+  // the local ambiguity caused by not knowing whether "<" indicates
+  // a "less-than" expression or a type argument.
+
+  primary_no_new_array =
+    {literal} literal |
+    {type} type_no_arguments dot class_keyword |
+    {void} void_keyword dot class_keyword |
+    {this} this_keyword |
+    {class} class_name dot this_keyword |
+    {expression} l_par expression_no_name r_par |
+    {expression_name} l_par name r_par |
+    {instance} class_instance_creation_expression |
+    {field} field_access |
+    {method} method_invocation |
+    {array} array_access;
+
+  // Missing from JLS
+
+  class_name =
+    name;
+
+  // 15.9
+
+  class_instance_creation_expression =
+    {new} new_keyword type_arguments? type_decl_specifier type_arguments_or_diamond? l_par argument_list? r_par class_body? |
+    {primary} primary dot new_keyword type_arguments? identifier type_arguments_or_diamond? l_par argument_list? r_par class_body?;
+
+  type_arguments_or_diamond =
+    {type_arguments} type_arguments |
+    {diamond} lt gt;
+
+  //argument_list =
+  //  {expression} expression |
+  //  {list} argument_list comma expression;
+
+  argument_list =
+    {expression} expression_no_name argument_list_tail* |
+    {name} name argument_list_tail*;
+
+  argument_list_tail =
+    {expression} comma expression_no_name |
+    {name} comma name;
+
+  // 15.10
+
+  array_creation_expression =
+    {primitive} new_keyword primitive_type dim_exprs dim* |
+    {class} new_keyword class_or_interface_type dim_exprs dim* |
+    {primitive_initializer} new_keyword primitive_type dim+ array_initializer |
+    {class_initializer} new_keyword class_or_interface_type dim+ array_initializer;
+
+  dim_exprs =
+    {expr} dim_expr |
+    {exprs} dim_exprs dim_expr;
+
+  //dim_expr =
+  //  l_bkt expression r_bkt;
+
+  dim_expr =
+    {expression} l_bkt expression_no_name r_bkt |
+    {name} l_bkt name r_bkt;
+
+  //dims =
+  //  {dim} l_bkt r_bkt |
+  //  {dims} dims l_bkt r_bkt;
+
+  dim =
+    l_bkt r_bkt;
+
+  // 15.11
+
+  field_access =
+    {primary} primary dot identifier |
+    {super} super_keyword dot identifier |
+    {class} class_name [dot1]:dot super_keyword [dot2]:dot identifier;
+
+  // 15.12
+
+  method_invocation =
+    {method} name l_par argument_list? r_par |
+    {primary} primary dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {super} super_keyword dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {class} class_name [dot1]:dot super_keyword [dot2]:dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {type} name dot non_wild_type_arguments identifier l_par argument_list? r_par;
+
+  // 15.13
+
+  //array_access =
+  //  {expression} name l_bkt expression r_bkt |
+  //  {primary} primary_no_new_array l_bkt expression r_bkt;
+
+  array_access =
+    {expression} name l_bkt expression_no_name r_bkt |
+    {expression_name} [name1]:name l_bkt [name2]:name r_bkt |
+    {primary} primary_no_new_array l_bkt expression_no_name r_bkt |
+    {primary_name} primary_no_new_array l_bkt name r_bkt;
+
+  // 15.14
+
+  //postfix_expression =
+  //  {primary} primary |
+  //  {expression} name |
+  //  {increment} post_increment_expression |
+  //  {decrement} post_decrement_expression;
+
+  postfix_expression_no_name =
+    {primary} primary |
+    {increment} post_increment_expression |
+    {decrement} post_decrement_expression;
+
+  //post_increment_expression =
+  //  postfix_expression plus_plus;
+
+  post_increment_expression =
+    {postfix} postfix_expression_no_name plus_plus |
+    {name} name plus_plus;
+
+  //post_decrement_expression =
+  //  postfix_expression minus_minus;
+
+  post_decrement_expression =
+    {postfix} postfix_expression_no_name minus_minus |
+    {name} name minus_minus;
+
+  // 15.15
+
+  //unary_expression =
+  // {increment} pre_increment_expression |
+  // {decrement} pre_decrement_expression |
+  // {plus} plus unary_expression |
+  // {minus} minus unary_expression |
+  // {unary} unary_expression_not_plus_minus;
+
+  unary_expression_no_name =
+   {increment} pre_increment_expression |
+   {decrement} pre_decrement_expression |
+   {plus} plus unary_expression_no_name |
+   {plus_name} plus name |
+   {minus} minus unary_expression_no_name |
+   {minus_name} minus name |
+   {unary} unary_expression_not_plus_minus_no_name;
+
+  //pre_increment_expression =
+  //  plus_plus unary_expression;
+
+  pre_increment_expression =
+    {unary} plus_plus unary_expression_no_name |
+    {name} plus_plus name;
+
+  //pre_decrement_expression =
+  //  minus_minus unary_expression;
+
+  pre_decrement_expression =
+    {unary} minus_minus unary_expression_no_name |
+    {name} minus_minus name;
+
+  //unary_expression_not_plus_minus =
+  //  {postfix} postfix_expression |
+  //  {tilde} tilde unary_expression |
+  //  {emark} emark unary_expression |
+  //  {cast} cast_expression;
+
+  unary_expression_not_plus_minus_no_name =
+    {postfix} postfix_expression_no_name |
+    {tilde} tilde unary_expression_no_name |
+    {tilde_name} tilde name |
+    {emark} emark unary_expression_no_name |
+    {emark_name} emark name |
+    {cast} cast_expression;
+
+  // 15.16
+
+  //cast_expression =
+  //  {primitive} l_par primitive_type r_par unary_expression |
+  //  {reference} l_par reference_type r_par unary_expression_not_plus_minus;
+
+  cast_expression =
+    {primitive} l_par primitive_type r_par unary_expression_no_name |
+    {primitive_name} l_par primitive_type r_par name |
+    {reference} l_par reference_type r_par unary_expression_not_plus_minus_no_name |
+    {reference_name} l_par reference_type r_par name;
+
+  // 15.17
+
+  //multiplicative_expression =
+  //  {unary} unary_expression |
+  //  {star} multiplicative_expression star unary_expression |
+  //  {slash} multiplicative_expression slash unary_expression |
+  //  {percent} multiplicative_expression percent unary_expression;
+
+  multiplicative_expression_no_name =
+    {unary} unary_expression_no_name |
+    {star} multiplicative_expression_no_name star unary_expression_no_name |
+    {star_name} multiplicative_expression_no_name star name |
+    {name_star} name star unary_expression_no_name |
+    {name_star_name} [name1]:name star [name2]:name |
+    {slash} multiplicative_expression_no_name slash unary_expression_no_name |
+    {slash_name} multiplicative_expression_no_name slash name |
+    {name_slash} name slash unary_expression_no_name |
+    {name_slash_name} [name1]:name slash [name2]:name |
+    {percent} multiplicative_expression_no_name percent unary_expression_no_name |
+    {percent_name} multiplicative_expression_no_name percent name |
+    {name_percent} name percent unary_expression_no_name |
+    {name_percent_name} [name1]:name percent [name2]:name;
+
+  // 15.18
+
+  //additive_expression =
+  //  {multiplicative} multiplicative_expression |
+  //  {plus} additive_expression plus multiplicative_expression |
+  //  {minus} additive_expression minus multiplicative_expression;
+
+  additive_expression_no_name =
+    {multiplicative} multiplicative_expression_no_name |
+    {plus} additive_expression_no_name plus multiplicative_expression_no_name |
+    {plus_name} additive_expression_no_name plus name |
+    {name_plus} name plus multiplicative_expression_no_name |
+    {name_plus_name} [name1]:name plus [name2]:name |
+    {minus} additive_expression_no_name minus multiplicative_expression_no_name |
+    {minus_name} additive_expression_no_name minus name |
+    {name_minus} name minus multiplicative_expression_no_name |
+    {name_minus_name} [name1]:name minus [name2]:name;
+
+  // 15.19
+
+  //shift_expression =
+  //  {additive} additive_expression |
+  //  {shl} shift_expression shl additive_expression |
+  //  {shr} shift_expression shr additive_expression |
+  //  {ushr} shift_expression ushr additive_expression;
+
+  shift_expression_no_name =
+    {additive} additive_expression_no_name |
+    {shl} shift_expression_no_name shl additive_expression_no_name |
+    {shl_name} shift_expression_no_name shl name |
+    {name_shl} name shl additive_expression_no_name |
+    {name_shl_name} [name1]:name shl [name2]:name |
+    {shr} shift_expression_no_name shr additive_expression_no_name |
+    {shr_name} shift_expression_no_name shr name |
+    {name_shr} name shr additive_expression_no_name |
+    {name_shr_name} [name1]:name shr [name2]:name |
+    {ushr} shift_expression_no_name ushr additive_expression_no_name |
+    {ushr_name} shift_expression_no_name ushr name |
+    {name_ushr} name ushr additive_expression_no_name |
+    {name_ushr_name} [name1]:name ushr [name2]:name;
+
+  // 15.20
+
+  //relational_expression =
+  //  {shift}     shift_expression |
+  //  {lt} relational_expression lt shift_expression |
+  //  {gt} relational_expression gt shift_expression |
+  //  {lteq} relational_expression lteq shift_expression |
+  //  {gteq} relational_expression gteq shift_expression |
+  //  {instanceof} relational_expression instanceof_keyword reference_type;
+
+  // There's a problem case to deal with:
+  //   ... a instanceof B < ...
+  // causes a conflict, but we know that, semantically, the result of
+  // instanceof is a boolean, so we assume the "<" is the start of a
+  // type parameter, not the "less than" operator.
+
+  relational_expression_no_name =
+    {no_instanceof} relational_expression_no_name_no_instanceof |
+    {instanceof} relational_expression_no_name instanceof_keyword reference_type |
+    {name_instanceof} name instanceof_keyword reference_type;
+
+  // WARNING: the production was rewritten as right associative
+  // to eliminate conflicts.
+
+  relational_expression_no_name_no_instanceof =
+    {shift} shift_expression_no_name |
+    {lt} shift_expression_no_name lt relational_expression_no_name_no_instanceof |
+    {lt_name} shift_expression_no_name lt name |
+    {name_lt} name lt relational_expression_no_name_no_instanceof |
+    {name_lt_name} [name1]:name lt [name2]:name |
+    {gt} shift_expression_no_name gt relational_expression_no_name_no_instanceof |
+    {gt_name} shift_expression_no_name gt name |
+    {name_gt} name gt relational_expression_no_name_no_instanceof |
+    {name_gt_name} [name1]:name gt [name2]:name |
+    {lteq} shift_expression_no_name lteq relational_expression_no_name_no_instanceof |
+    {lteq_name} shift_expression_no_name lteq name |
+    {name_lteq} name lteq relational_expression_no_name_no_instanceof |
+    {name_lteq_name} [name1]:name lteq [name2]:name |
+    {gteq} shift_expression_no_name gteq relational_expression_no_name_no_instanceof |
+    {gteq_name} shift_expression_no_name gteq name |
+    {name_gteq} name gteq relational_expression_no_name_no_instanceof |
+    {name_gteq_name} [name1]:name gteq [name2]:name;
+
+  // 15.21
+
+  //equality_expression =
+  //  {relational} relational_expression |
+  //  {eq} equality_expression eq relational_expression |
+  //  {neq} equality_expression neq relational_expression;
+
+  equality_expression_no_name =
+    {relational} relational_expression_no_name |
+    {eq} equality_expression_no_name eq relational_expression_no_name |
+    {eq_name} equality_expression_no_name eq name |
+    {name_eq} name eq relational_expression_no_name |
+    {name_eq_name} [name1]:name eq [name2]:name |
+    {neq} equality_expression_no_name neq relational_expression_no_name |
+    {neq_name} equality_expression_no_name neq name |
+    {name_neq} name neq relational_expression_no_name |
+    {name_neq_name} [name1]:name neq [name2]:name;
+
+  // 15.22
+
+  //and_expression =
+  //  {equality} equality_expression |
+  //  {amp} and_expression amp equality_expression;
+
+  and_expression_no_name =
+    {equality} equality_expression_no_name |
+    {amp} and_expression_no_name amp equality_expression_no_name |
+    {amp_name} and_expression_no_name amp name |
+    {name_amp} name amp equality_expression_no_name |
+    {name_amp_name} [name1]:name amp [name2]:name;
+
+  //exclusive_or_expression =
+  //  {and} and_expression |
+  //  {caret} exclusive_or_expression caret and_expression;
+
+  exclusive_or_expression_no_name =
+    {and} and_expression_no_name |
+    {caret} exclusive_or_expression_no_name caret and_expression_no_name |
+    {caret_name} exclusive_or_expression_no_name caret name |
+    {name_caret} name caret and_expression_no_name |
+    {name_caret_name} [name1]:name caret [name2]:name;
+
+  //inclusive_or_expression =
+  //  {or} exclusive_or_expression |
+  //  {bar} inclusive_or_expression bar exclusive_or_expression;
+
+  inclusive_or_expression_no_name =
+    {or} exclusive_or_expression_no_name |
+    {bar} inclusive_or_expression_no_name bar exclusive_or_expression_no_name |
+    {bar_name} inclusive_or_expression_no_name bar name |
+    {name_bar} name bar exclusive_or_expression_no_name |
+    {name_bar_name} [name1]:name bar [name2]:name;
+
+  // 15.23
+
+  //conditional_and_expression =
+  //  {or} inclusive_or_expression |
+  //  {amp} conditional_and_expression amp_amp inclusive_or_expression;
+
+  conditional_and_expression_no_name =
+    {or} inclusive_or_expression_no_name |
+    {amp} conditional_and_expression_no_name amp_amp inclusive_or_expression_no_name |
+    {amp_name} conditional_and_expression_no_name amp_amp name |
+    {name_amp} name amp_amp inclusive_or_expression_no_name |
+    {name_amp_name} [name1]:name amp_amp [name2]:name;
+
+  // 15.24
+
+  //conditional_or_expression =
+  //  {and} conditional_and_expression |
+  //  {bar} conditional_or_expression bar_bar conditional_and_expression;
+
+  conditional_or_expression_no_name =
+    {and} conditional_and_expression_no_name |
+    {bar} conditional_or_expression_no_name bar_bar conditional_and_expression_no_name |
+    {bar_name} conditional_or_expression_no_name bar_bar name |
+    {name_bar} name bar_bar conditional_and_expression_no_name |
+    {name_bar_name} [name1]:name bar_bar [name2]:name;
+
+  // 15.25
+
+  //conditional_expression =
+  //  {or} conditional_or_expression |
+  //  {qmark} conditional_or_expression qmark expression colon conditional_expression;
+
+  conditional_expression_no_name =
+    {or} conditional_or_expression_no_name |
+    {qmark_colon} conditional_or_expression_no_name qmark expression_no_name colon conditional_expression_no_name |
+    {qmark_name_colon} conditional_or_expression_no_name qmark name colon conditional_expression_no_name |
+    {qmark_colon_name} conditional_or_expression_no_name qmark expression_no_name colon name |
+    {qmark_name_colon_name} conditional_or_expression_no_name qmark [name1]:name colon [name2]:name |
+    {name_qmark_colon} name qmark expression_no_name colon conditional_expression_no_name |
+    {name_qmark_name_colon} [name1]:name qmark [name2]:name colon conditional_expression_no_name |
+    {name_qmark_colon_name} [name1]:name qmark expression_no_name colon [name2]:name |
+    {name_qmark_name_colon_name} [name1]:name qmark [name2]:name colon [name3]:name;
+
+  // 15.26
+
+  //assignment_expression =
+  //  {expression} conditional_expression |
+  //  {assignment} assignment;
+
+  assignment_expression_no_name =
+    {expression} conditional_expression_no_name |
+    {assignment} assignment;
+
+  //assignment =
+  //  left_hand_side assignment_operator assignment_expression;
+
+  assignment =
+    {assignment} left_hand_side assignment_operator assignment_expression_no_name |
+    {name} left_hand_side assignment_operator name;
+
+  left_hand_side =
+    {expression} name |
+    {field} field_access |
+    {array} array_access;
+
+  assignment_operator =
+    {assign} assign |
+    {star_assign} star_assign |
+    {slash_assign} slash_assign |
+    {percent_assign} percent_assign |
+    {plus_assign} plus_assign |
+    {minus_assign} minus_assign |
+    {shl_assign} shl_assign |
+    {shr_assign} shr_assign |
+    {ushr_assign} ushr_assign |
+    {amp_assign} amp_assign |
+    {caret_assign} caret_assign |
+    {bar_assign} bar_assign;
+
+  // 15.27
+
+  //expression =
+  //  assignment_expression;
+
+  expression_no_name =
+    assignment_expression_no_name;
+
+  // 15.28
+
+  //constant_expression =
+  //  expression;
+
+  constant_expression_no_name =
+    expression_no_name;
+

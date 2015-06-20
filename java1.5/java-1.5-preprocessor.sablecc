@@ -1,0 +1,59 @@
+/* This file is part of the Java 1.5 grammar for SableCC.
+ *
+ * Copyright 2006 Etienne M. Gagnon <egagnon@j-meg.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Note: this hasn't yet been verified to exactly match the
+// specification.
+
+Package org.sablecc.grammars.java_1_5.unicodepreprocessor;
+
+Helpers
+    any_unicode_character = [0..0xffff];
+    unicode_marker = 'u'+;
+    hex_digit = ['0'..'9'] | ['a'..'f'] | ['A'..'F'];
+
+States
+    normal,
+    sub;
+
+Tokens
+/*************************************************************************************
+ * The precedence of longer and earlier definitions is important! The sequence '\\u' *
+ * will generate two tokens: even_backslash('\\') and raw_input_character('u').      *
+ *************************************************************************************/
+
+    even_backslash = '\\';
+        /* The preprocessor should return two unicode characters: '\' '\' */
+
+    unicode_escape = '\' unicode_marker hex_digit hex_digit hex_digit hex_digit;
+        /* The preprocessor should return a single unicode character */
+    
+    erroneous_escape = '\' unicode_marker hex_digit? hex_digit? hex_digit?;
+        /* The preprocessor should issue an error */
+
+{normal->sub, sub}
+    sub = 0x001a;
+        /* The preprocessor should discard a SUB ASCII character if it is the last  */
+        /* character on the input reader.                                           */
+        /* This requires the use of a customized lexer that derives from Lexer and  */
+        /* that puts the TSub token in a buffer until the next token is read.       */
+        /* If the next token is EOF, EOF is returned, and the state should be reset */
+        /* to normal. Else, the text of next token is pushed back on the input      */
+        /* reader, the buffered TSub token is returned, and the state is reset to   */
+        /* normal.                                                                  */
+
+    raw_input_character = any_unicode_character;
+        /* The preprocessor should return a single unicode character */

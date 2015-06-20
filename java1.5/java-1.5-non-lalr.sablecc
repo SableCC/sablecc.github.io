@@ -1,0 +1,911 @@
+/* This file is part of the Java 1.5 grammar for SableCC.
+ *
+ * Copyright 2006 Etienne M. Gagnon <egagnon@j-meg.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Package org.sablecc.grammars.java_1_5;
+
+
+Helpers
+
+  all = [0..0xffff];
+
+
+Tokens
+
+  // markers
+  at = '@';
+  dot_dot_dot = '...';
+
+  // separators
+
+  comma = ',';
+  dot   = '.';
+  l_bkt = '[';
+  l_brc = '{';
+  l_par = '(';
+  r_bkt = ']';
+  r_brc = '}';
+  r_par = ')';
+  semi  = ';';
+
+  // operators
+
+  amp = '&';
+  amp_amp = '&&';
+  amp_assign = '&=';
+  assign = '=';
+  bar = '|';
+  bar_assign = '|=';
+  bar_bar = '||';
+  caret = '^';
+  caret_assign = '^=';
+  colon = ':';
+  emark = '!';
+  eq = '==';
+  gt = '>';
+  gteq = '>=';
+  lt = '<';
+  lteq = '<=';
+  minus = '-';
+  minus_assign = '-=';
+  minus_minus = '--';
+  neq = '!=';
+  percent = '%';
+  percent_assign = '%=';
+  plus = '+';
+  plus_assign = '+=';
+  plus_plus = '++';
+  qmark = '?';
+  shl = '<<';
+  shl_assign = '<<=';
+  shr = '>>';
+  shr_assign = '>>=';
+  slash = '/';
+  slash_assign = '/=';
+  star = '*';
+  star_assign = '*=';
+  tilde = '~';
+  ushr = '>>>';
+  ushr_assign = '>>>=';
+
+  // keywords
+
+  abstract = 'abstract';
+  assert = 'assert';
+  boolean = 'boolean';
+  break = 'break';
+  byte = 'byte';
+  case = 'case';
+  catch = 'catch';
+  char = 'char';
+  class_token = 'class';
+  const = 'const';
+  continue = 'continue';
+  default = 'default';
+  do = 'do';
+  double = 'double';
+  else = 'else';
+  enum = 'enum';
+  extends = 'extends';
+  final = 'final';
+  finally_token = 'finally';
+  float = 'float';
+  for = 'for';
+  goto = 'goto';
+  if = 'if';
+  implements = 'implements';
+  import = 'import';
+  instanceof = 'instanceof';
+  int = 'int';
+  interface = 'interface';
+  long = 'long';
+  native = 'native';
+  new = 'new';
+  package = 'package';
+  private = 'private';
+  protected = 'protected';
+  public = 'public';
+  return = 'return';
+  short = 'short';
+  static = 'static';
+  strictfp = 'strictfp';
+  super_token = 'super';
+  switch = 'switch';
+  synchronized = 'synchronized';
+  this = 'this';
+  throw = 'throw';
+  throws_token = 'throws';
+  transient = 'transient';
+  try = 'try';
+  void = 'void';
+  volatile = 'volatile';
+  while = 'while';
+
+  // literals
+
+  boolean_literal = ;
+  character_literal = ;
+  floating_point_literal = ;
+  integer_literal = ;
+  null_literal = ;
+  string_literal = ;
+
+  // identifier
+
+  identifier = ;
+
+
+Productions
+
+  compilation_unit =
+    package_declaration? import_declaration* type_declaration*;
+
+  package_declaration =
+    annotation* package package_name semi;
+
+  import_declaration =
+    {single} single_type_import_declaration |
+    {type}   type_import_on_demand_declaration |
+    {static} single_static_import_declaration |
+    {demand} static_import_on_demand_declaration;
+
+  type_declaration =
+    {class}     class_declaration |
+    {interface} interface_declaration |
+    {empty}     semi;
+
+  annotation =
+    {norm}   normal_annotation |
+    {mark}   marker_annotation |
+    {single} single_element_annotation;
+
+  package_name =
+    {simple}  identifier |
+    {complex} package_name dot identifier;
+
+  single_type_import_declaration =
+    import type_name semi;
+
+  type_import_on_demand_declaration =
+    import package_or_type_name dot star semi;
+
+  single_static_import_declaration =
+    import static type_name dot identifier semi;
+
+  static_import_on_demand_declaration =
+    import static type_name dot star semi;
+
+  class_declaration =
+    {norm} normal_class_declaration |
+    {enum} enum_declaration;
+
+  interface_declaration =
+    {norm}  normal_interface_declaration |
+    {annot} annotation_type_declaration;
+
+  normal_annotation =
+    at type_name l_par element_value_pairs? r_par;
+
+  marker_annotation =
+    at type_name;
+
+  single_element_annotation =
+    at type_name l_par element_value r_par;
+
+  type_name =
+    {identifier} identifier |
+    {dot}        type_name dot identifier;
+
+  package_or_type_name =
+    {simple}  identifier |
+    {complex} package_or_type_name dot identifier;
+
+  normal_class_declaration =
+    class_modifier* class_token identifier type_parameters? super? interfaces? class_body;
+
+  enum_declaration =
+    class_modifier* enum identifier interfaces? enum_body;
+
+  normal_interface_declaration =
+    interface_modifier* interface identifier type_parameters? extends_interfaces? interface_body;
+
+  annotation_type_declaration =
+    interface_modifier* at interface identifier annotation_type_body;
+
+  element_value_pairs =
+    {simple}  element_value_pair |
+    {complex} element_value_pairs comma element_value_pair;
+
+  element_value =
+    {conditional} conditional_expression |
+    {annotation}  annotation |
+    {array}       element_value_array_initializer;
+
+  class_modifier =
+    {annotation} annotation |
+    {public}     public |
+    {protected}  protected |
+    {private}    private |
+    {abstract}   abstract |
+    {static}     static |
+    {final}      final |
+    {strictfp}   strictfp;
+
+  type_parameters =
+    lt type_parameter_list gt;
+
+  super =
+    extends class_type;
+
+  interfaces =
+    implements interface_type_list;
+
+  class_body =
+    l_brc class_body_declaration* r_brc;
+
+  enum_body =
+    l_brc enum_constants? comma? enum_body_declarations? r_brc;
+
+  interface_modifier =
+    {annotation} annotation |
+    {public}     public |
+    {protected}  protected |
+    {private}    private |
+    {abstract}   abstract |
+    {static}     static |
+    {strictfp}   strictfp;
+
+  extends_interfaces =
+    {simple}  extends interface_type |
+    {complex} extends_interfaces comma interface_type;
+
+  interface_body =
+    l_brc interface_member_declaration* r_brc;
+
+  annotation_type_body =
+    l_brc annotation_type_element_declaration* r_brc;
+
+  element_value_pair =
+    identifier assign element_value;
+
+  conditional_expression =
+    {simple}  conditional_or_expression |
+    {complex} conditional_or_expression qmark expression colon conditional_expression;
+
+  element_value_array_initializer =
+    l_brc element_values? comma? r_brc;
+
+  type_parameter_list =
+    {simple}  type_parameter |
+    {complex} type_parameter_list comma type_parameter;
+
+  class_type =
+    type_decl_specifier type_arguments?;
+
+  interface_type_list =
+    {simple}  interface_type |
+    {complex} interface_type_list comma interface_type;
+
+  class_body_declaration =
+    {member}      class_member_declaration |
+    {instance}    instance_initializer |
+    {static}      static_initializer |
+    {constructor} constructor_declaration;
+
+  enum_constants =
+    {simple}  enum_constant |
+    {complex} enum_constants comma enum_constant;
+
+  enum_body_declarations =
+    semi class_body_declaration*;
+
+  interface_type =
+    type_decl_specifier type_arguments?;
+
+  interface_member_declaration =
+     {constant}  constant_declaration |
+     {method}    abstract_method_declaration |
+     {class}     class_declaration |
+     {interface} interface_declaration |
+     {empty}     semi;
+
+  annotation_type_element_declaration =
+    {abstract}   abstract_method_modifier* type identifier l_par r_par default_value? semi |
+    {constant}   constant_declaration |
+    {class}      class_declaration |
+    {interface}  interface_declaration |
+    {empty}      semi;
+
+  conditional_or_expression =
+    {simple}  conditional_and_expression |
+    {complex} conditional_or_expression bar_bar conditional_and_expression;
+
+  expression =
+    assignment_expression;
+
+  element_values =
+    {simple}  element_value |
+    {complex} element_values comma element_value;
+
+  type_parameter =
+    type_variable type_bound?;
+
+  type_decl_specifier =
+    {name}       type_name |
+    {identifier} class_or_interface_type dot identifier;
+
+  type_arguments =
+    lt actual_type_argument_list gt;
+
+  class_member_declaration =
+    {field}     field_declaration |
+    {method}    method_declaration |
+    {class}     class_declaration |
+    {interface} interface_declaration |
+    {empty}     semi;
+
+  instance_initializer =
+    block;
+
+  static_initializer =
+    static block;
+
+  constructor_declaration =
+    constructor_modifier* constructor_declarator throws? constructor_body;
+
+  enum_constant =
+    annotation* identifier arguments? class_body?;
+
+  constant_declaration =
+    constant_modifier* type variable_declarators semi;
+
+  abstract_method_declaration =
+    abstract_method_modifier* type_parameters? result_type method_declarator throws? semi;
+
+  abstract_method_modifier =
+    {annotation} annotation |
+    {public}     public |
+    {abstract}   abstract;
+
+  type =
+    {prim} primitive_type |
+    {ref}  reference_type;
+
+  default_value =
+    default element_value;
+
+  conditional_and_expression =
+    {simple}  inclusive_or_expression |
+    {complex} conditional_and_expression amp_amp inclusive_or_expression;
+
+  assignment_expression =
+    {expression} conditional_expression |
+    {assignment} assignment;
+
+  type_variable =
+    identifier;
+
+  type_bound =
+    extends class_or_interface_type additional_bound*;
+
+  class_or_interface_type =
+    {class} class_type |
+    {interface} interface_type;
+
+  actual_type_argument_list =
+    {simple}  actual_type_argument |
+    {complex} actual_type_argument_list comma actual_type_argument;
+
+  field_declaration =
+    field_modifier* type variable_declarators semi;
+
+  method_declaration =
+    method_header method_body;
+
+  block =
+    l_brc block_statement* r_brc;
+
+  constructor_modifier =
+    {annotation} annotation |
+    {public} public |
+    {protected} protected |
+    {private} private;
+
+  constructor_declarator =
+    type_parameters? simple_type_name l_par formal_parameter_list? r_par;
+
+  throws =
+    throws_token exception_type_list;
+
+  constructor_body =
+    l_brc explicit_constructor_invocation? block_statement* r_brc;
+
+  arguments =
+    l_par argument_list? r_par;
+
+  constant_modifier =
+    {annotation} annotation |
+    {public} public |
+    {static} static |
+    {final} final;
+
+  variable_declarators =
+    {simple}  variable_declarator |
+    {complex} variable_declarators comma variable_declarator;
+
+  result_type =
+    {type} type |
+    {void} void;
+
+  method_declarator =
+    identifier l_par formal_parameter_list? r_par;
+
+  primitive_type =
+    {numeric} numeric_type |
+    {boolean} boolean;
+
+  reference_type =
+    {class}    class_or_interface_type |
+    {variable} type_variable |
+    {array}    array_type;
+
+  inclusive_or_expression =
+    {simple}  exclusive_or_expression |
+    {complex} inclusive_or_expression bar exclusive_or_expression;
+
+  assignment =
+    left_hand_side assignment_operator assignment_expression;
+
+  additional_bound =
+    amp interface_type;
+
+  actual_type_argument =
+    {reference} reference_type |
+    {wildcard}  wildcard;
+
+  field_modifier =
+    {annotation} annotation |
+    {public}     public |
+    {protected}  protected |
+    {private}    private |
+    {static}     static |
+    {final}      final |
+    {transient}  transient |
+    {volatile}   volatile;
+
+  method_header =
+    method_modifier* type_parameters? result_type method_declarator throws?; 
+
+  method_body =
+    {block} block |
+    {empty} semi;
+
+  block_statement =
+    {local}     local_variable_declaration_statement |
+    {class}     class_declaration |
+    {statement} statement;
+
+  simple_type_name =
+    identifier;
+
+  formal_parameter_list =
+    {last}   last_formal_parameter |
+    {formal} formal_parameters semi last_formal_parameter;
+
+  exception_type_list =
+    {simple}  exception_type |
+    {complex} exception_type_list semi exception_type;
+
+  explicit_constructor_invocation =
+    {this}    non_wild_type_arguments? this l_par argument_list? r_par semi |
+    {super}   non_wild_type_arguments? super_token l_par argument_list? r_par semi |
+    {primary} primary dot non_wild_type_arguments? super_token l_par argument_list? r_par semi;
+
+  argument_list =
+    {simple}  expression |
+    {complex} argument_list semi expression;
+
+  variable_declarator =
+    {no_init} variable_declarator_id |
+    {init}    variable_declarator_id assign variable_initializer;
+
+  numeric_type =
+    {integral} integral_type |
+    {floating} floating_point_type;
+
+  array_type =
+    type l_bkt r_bkt;
+
+  exclusive_or_expression =
+    {simple}  and_expression |
+    {complex} exclusive_or_expression caret and_expression;
+
+  left_hand_side =
+    {expression} expression_name |
+    {field}      field_access |
+    {array}      array_access;
+
+  assignment_operator =
+    {assign}         assign |
+    {star_assign}    star_assign |
+    {slash_assign}   slash_assign |
+    {percent_assign} percent_assign |
+    {plus_assign}    plus_assign |
+    {minus_assign}   minus_assign |
+    {shl_assign}     shl_assign |
+    {shr_assign}     shr_assign |
+    {ushr_assign}    ushr_assign |
+    {amp_assign}     amp_assign |
+    {caret_assign}   caret_assign |
+    {bar_assign}     bar_assign;
+
+  wildcard =
+    qmark wildcard_bounds?;
+
+  method_modifier =
+    {annotation}   annotation |
+    {public}       public |
+    {protected}    protected |
+    {private}      private |
+    {abstract}     abstract |
+    {static}       static |
+    {final}        final |
+    {synchronized} synchronized |
+    {native}       native |
+    {strictfp}     strictfp;
+
+  local_variable_declaration_statement =
+    local_variable_declaration semi;
+
+  statement =
+    {no_trail}   statement_without_trailing_substatement |
+    {label}      labeled_statement |
+    {if}         if_then_statement |
+    {if_else}    if_then_else_statement |
+    {while_loop} while_statement |
+    {for_loop}   for_statement;
+
+  last_formal_parameter =
+    {var_arg} variable_modifier* type dot_dot_dot variable_declarator_id |
+    {single}  formal_parameter;
+
+  formal_parameters =
+    {simple}  formal_parameter |
+    {complex} formal_parameters semi formal_parameter;
+
+  exception_type =
+    {class}    class_type |
+    {variable} type_variable;
+
+  non_wild_type_arguments =
+    lt reference_type_list gt;
+
+  primary =
+    {primary} primary_no_new_array |
+    {array}   array_creation_expression;
+
+  variable_declarator_id =
+    {identifier} identifier |
+    {array}      variable_declarator_id l_bkt r_bkt;
+
+  variable_initializer =
+    {expression} expression |
+    {array}      array_initializer;
+
+  integral_type =
+    {byte} byte |
+    {short} short |
+    {int} int |
+    {long} long |
+    {char} char;
+
+  floating_point_type =
+    {float} float |
+    {double} double;
+
+  and_expression =
+    {simple}  equality_expression |
+    {complex} and_expression amp equality_expression;
+
+  expression_name =
+    {identifier} identifier |
+    {ambiguous}  ambiguous_name dot identifier;
+
+  field_access =
+    {primary} primary dot identifier |
+    {super} super_token dot identifier |
+    {class} class_name [dot1]:dot super_token [dot2]:dot identifier;
+
+  array_access =
+    {expression} expression_name l_bkt expression r_bkt |
+    {primary}    primary_no_new_array l_bkt expression r_bkt;
+
+  wildcard_bounds =
+    {extends} extends reference_type |
+    {super} super_token reference_type;
+
+  local_variable_declaration =
+    variable_modifier* type variable_declarators;
+
+  statement_without_trailing_substatement =
+    {block}                  block |
+    {empty_statement}        empty_statement |
+    {expression_statement}   expression_statement |
+    {assert_statement}       assert_statement |
+    {switch_statement}       switch_statement |
+    {do_statement}           do_statement |
+    {break_statement}        break_statement |
+    {continue_statement}     continue_statement |
+    {return_statement}       return_statement |
+    {synchronized_statement} synchronized_statement |
+    {throw_statement}        throw_statement |
+    {try_statement}          try_statement;
+
+  labeled_statement =
+    identifier colon statement;
+
+  if_then_statement =
+    if l_par expression r_par statement;
+
+  if_then_else_statement =
+    if l_par expression r_par statement_no_short_if else statement;
+
+  while_statement =
+    while l_par expression r_par statement;
+
+  for_statement =
+    {basic_for}    basic_for_statement |
+    {enhanced_for} enhanced_for_statement;
+
+  variable_modifier =
+    {final}      final |
+    {annotation} annotation;
+
+  formal_parameter =
+    variable_modifier* type variable_declarator_id;
+
+  reference_type_list =
+    {simple}  reference_type |
+    {complex} reference_type_list comma reference_type;
+
+  primary_no_new_array =
+    {literal} literal |
+    {type} type dot class_token |
+    {void} void dot class_token |
+    {this} this |
+    {class} class_name dot this |
+    {expression} l_par expression r_par |
+    {instance} class_instance_creation_expression |
+    {field} field_access |
+    {method} method_invocation |
+    {array} array_access;
+
+  array_creation_expression =
+    {primitive}             new primitive_type dim_expr+ dim* |
+    {reference}             new class_or_interface_type dim_expr+ dim* |
+    {primitive_initializer} new primitive_type dim+ array_initializer |
+    {reference_initializer} new class_or_interface_type dim+ array_initializer;
+
+  array_initializer =
+    l_bkt variable_initializers? comma? r_bkt;
+
+  variable_initializers =
+    {simple}  variable_initializer |
+    {complex} variable_initializers comma variable_initializer;
+
+  equality_expression =
+    {simple} relational_expression |
+    {eq}     equality_expression eq relational_expression |
+    {neq}    equality_expression neq relational_expression;
+
+  ambiguous_name =
+    {simple}  identifier |
+    {complex} ambiguous_name dot identifier;
+
+  class_name =
+    type_name;
+
+  empty_statement =
+    semi;
+
+  expression_statement =
+    statement_expression semi;
+
+  assert_statement =
+    {one} assert expression semi |
+    {two} assert [expression1]:expression colon [expression2]:expression semi;
+
+  switch_statement =
+    switch l_par expression r_par switch_block;
+
+  do_statement =
+    do statement while l_par expression r_par semi;
+
+  break_statement =
+    break identifier? semi;
+
+  continue_statement =
+    continue identifier? semi;
+
+  return_statement =
+    return expression? semi;
+
+  synchronized_statement =
+    synchronized l_par expression r_par block;
+
+  throw_statement =
+    throw expression semi;
+
+  try_statement =
+    {catch}   try block catch_clause+ |
+    {finally} try block catch_clause* finally;
+
+  statement_no_short_if =
+    {statement_without_trailing_substatement} statement_without_trailing_substatement |
+    {labeled_statement_no_short_if}           labeled_statement_no_short_if |
+    {if_then_else_statement_no_short_if}      if_then_else_statement_no_short_if |
+    {while_statement_no_short_if}             while_statement_no_short_if |
+    {for_statement_no_short_if}               for_statement_no_short_if;
+
+  basic_for_statement =
+    for l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement;
+
+  enhanced_for_statement =
+    for l_par variable_modifier* type identifier colon expression r_par statement;
+
+  literal =
+    {integer}        integer_literal |
+    {floating_point} floating_point_literal |
+    {boolean}        boolean_literal |
+    {character}      character_literal |
+    {string}         string_literal |
+    {null}           null_literal;
+
+  class_instance_creation_expression =
+    {new}     new type_arguments? class_or_interface_type l_par argument_list? r_par class_body? |
+    {primary} primary dot new [type_arguments1]:type_arguments? identifier [type_arguments2]:type_arguments? l_par argument_list? r_par class_body?;
+
+  method_invocation =
+    {method}  method_name l_par argument_list? r_par |
+    {primary} primary dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {super}   super_token dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {class}   class_name [dot1]:dot super_token [dot2]:dot non_wild_type_arguments? identifier l_par argument_list? r_par |
+    {type}    type_name dot non_wild_type_arguments identifier l_par argument_list? r_par;
+
+  dim_expr =
+    l_bkt expression r_bkt;
+
+  dim =
+    l_bkt r_bkt;
+
+  relational_expression =
+    {simple}     shift_expression |
+    {lt}         relational_expression lt shift_expression |
+    {gt}         relational_expression gt shift_expression |
+    {lteq}       relational_expression lteq shift_expression |
+    {gteq}       relational_expression gteq shift_expression |
+    {instanceof} relational_expression instanceof reference_type;
+
+  statement_expression =
+    {assignment}     assignment |
+    {pre_increment}  pre_increment_expression |
+    {pre_decrement}  pre_decrement_expression |
+    {post_increment} post_increment_expression |
+    {post_decrement} post_decrement_expression |
+    {method}         method_invocation |
+    {class}          class_instance_creation_expression;
+
+  switch_block =
+    l_brc switch_block_statement_group* switch_label* r_brc;
+
+  catch_clause =
+    catch l_par formal_parameter r_par block;
+
+  finally =
+    finally_token block;
+
+  labeled_statement_no_short_if =
+    identifier colon statement_no_short_if;
+
+  if_then_else_statement_no_short_if =
+    if l_par expression r_par [statement_no_short_if1]:statement_no_short_if else [statement_no_short_if2]:statement_no_short_if;
+
+  while_statement_no_short_if =
+    while l_par expression r_par statement_no_short_if;
+
+  for_statement_no_short_if =
+        for l_par for_init? [semi1]:semi expression? [semi2]:semi for_update? r_par statement_no_short_if;
+
+  for_init =
+    {statement} statement_expression_list |
+    {local}     local_variable_declaration;
+
+  for_update =
+    statement_expression_list;
+
+  method_name =
+    {identifier} identifier |
+    {ambiguous}  ambiguous_name dot identifier;
+
+  shift_expression =
+    {simple} additive_expression |
+    {shl}    shift_expression shl additive_expression |
+    {shr}    shift_expression shr additive_expression |
+    {ushr}   shift_expression ushr additive_expression;
+
+  pre_increment_expression =
+    plus_plus unary_expression;
+
+  pre_decrement_expression =
+    minus_minus unary_expression;
+
+  post_increment_expression =
+    postfix_expression plus_plus;
+
+  post_decrement_expression =
+    postfix_expression minus_minus;
+
+  switch_block_statement_group =
+    switch_label+ block_statement+;
+
+  switch_label =
+    {constant} case constant_expression colon |
+    {enum}     case enum_constant_name colon |
+    {default}  default colon;
+
+  statement_expression_list =
+    {simple}  statement_expression |
+    {complex} statement_expression_list comma statement_expression;
+
+  additive_expression =
+    {simple} multiplicative_expression |
+    {plus}   additive_expression plus multiplicative_expression |
+    {minus}  additive_expression minus multiplicative_expression;
+
+  unary_expression =
+   {pre_increment} pre_increment_expression |
+   {pre_decrement} pre_decrement_expression |
+   {plus}          plus unary_expression |
+   {minus}         minus unary_expression |
+   {unary}         unary_expression_not_plus_minus;
+
+  postfix_expression =
+    {primary}        primary |
+    {expression}     expression_name |
+    {post_increment} post_increment_expression |
+    {post_decrement} post_decrement_expression;
+
+  constant_expression =
+    expression;
+
+  enum_constant_name =
+    identifier;
+
+  multiplicative_expression =
+    {simple}  unary_expression |
+    {star}    multiplicative_expression star unary_expression |
+    {slash}   multiplicative_expression slash unary_expression |
+    {percent} multiplicative_expression percent unary_expression;
+
+  unary_expression_not_plus_minus =
+    {postfix} postfix_expression |
+    {tilde}   tilde unary_expression |
+    {emark}   emark unary_expression |
+    {cast}    cast_expression;
+
+  cast_expression =
+    {primitive} l_par primitive_type r_par unary_expression |
+    {reference} l_par reference_type r_par unary_expression_not_plus_minus;
