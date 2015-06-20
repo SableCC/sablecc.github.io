@@ -41,5 +41,5 @@ Note that while SableCC 2 might still be of value to some users, it is not suppo
 
 ## Other Downloads
 
-You can find additional resources on the old download page at http://sablecc.sourceforge.net/downloads.html.
+You can find additional resources on the old download page at <http://sablecc.sourceforge.net/downloads.html>.
 
