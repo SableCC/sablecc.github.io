@@ -33,7 +33,7 @@ SableCC 3 introduced grammar-specified parse-time CST->AST transformations.
 * **SableCC 3.2** (JDK 1.5 and later) [sablecc-3.2.zip](http://downloads.sourceforge.net/sablecc/sablecc-3.2.zip)
 * **SableCC 3.1** (JDK 1.4 and later) [sablecc-3.1.zip](http://downloads.sourceforge.net/sablecc/sablecc-3.1.zip)
 
-### (Old) SableCC 2 ===
+### (Old) SableCC 2
 
 Note that while SableCC 2 might still be of value to some users, it is not supported anymore.
 

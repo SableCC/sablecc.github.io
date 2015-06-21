@@ -35,7 +35,7 @@ The original thesis:
 
 The documentation page of the old site is located at <http://sablecc.sourceforge.net/documentation.html>.
 
-## Compiler Design Textbooks Which Use SableCC ==
+## Compiler Design Textbooks Which Use SableCC
 
 Appel, Andrew, *Modern Compiler Implementation in Java* (2nd edition), Cambridge University Press, 2002.
 
