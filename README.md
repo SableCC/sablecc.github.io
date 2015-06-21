@@ -1,2 +1,2 @@
 # sablecc.github.io
-SableCC web site
+Sources for the SableCC web site (<http://sablecc.org>)
