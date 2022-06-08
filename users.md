@@ -22,4 +22,4 @@ Feel free to <a href="{{site.github.repository_url}}/blob/master/{{page.path}}">
 * [TextUML Toolkit](http://abstratt.com/textuml/): The TextUML Toolkit is free Eclipse-based IDE for UML 2.1 that uses a textual notation.
 * [Willow](http://dependability.cs.virginia.edu/research/willow/): A management platform for survivability in large distributed information systems. SableCC is used for translators for the TEDL, SinkL, SyringeL, and AWOL languages.
 * [GniehTuring](http://gturing.n7mm.org): A framework to write compile and execute Turing machines. SableCC is used to generate the compiler for the specific language **TMDL**
-
+* [MIDSI](https://github.com/devdaniellima/midsi): A solution for data inference using semantic web and WSML language. SableCC is used for translators  for the WSML language.
